@@ -1,16 +1,12 @@
-#include "benchmark.h"
-#include <stdio.h>
 #include <stdlib.h>
+#include "benchmark.h"
 
-
-void* test(void* arg) {
-    printf("%zu\n", (size_t)arg);
-    system("sleep 0.1");
-    return (void*)314;
+void* example_func(void* arg) {
+    return NULL;
 }
 
-
 int main() {
-    printf("%zu\n", (size_t)benchmark(test, (void*)42, "Test", 1));
+    void* arg = NULL;
+    void* result = benchmark(example_func, arg, "Example benchmark", 2);
     print_results();
 }
