@@ -6,6 +6,8 @@ extern "C" {
 
 #include <errno.h>
 
+#ifndef NO_THROW
+
 void _throw_error(const char* err, ...);
 void _throw(int code);
 void _throw_msg(int code, const char* msg, ...);
@@ -54,6 +56,28 @@ void _throw_c_msg(int code, const char* msg, ...);
 #define THROW_PN(func, err) func; if (!err) _throw(errno)
 // Execute func and throw an error with a given message if err is 0. errno is used for the error code.
 #define THROW_PN_MSG(func, err, msg, ...) func; if (!err) _throw_msg(errno, msg, ##__VA_ARGS__)
+
+#else
+
+#define THROW_ERR(err, ...)
+#define THROW(func) func
+#define THROW_MSG(func, msg, ...) func
+#define THROW_R(func) func
+#define THROW_R_MSG(func, msg, ...) func
+#define THROW_C(func) func
+#define THROW_C_MSG(func, msg, ...) func
+#define THROW_N(func) func
+#define THROW_N_MSG(func, msg, ...) func
+#define THROW_P(func, err) func
+#define THROW_P_MSG(func, err, msg, ...) func
+#define THROW_PR(func, err) func
+#define THROW_PR_MSG(func, err, msg, ...) func
+#define THROW_PC(func, err) func
+#define THROW_PC_MSG(func, err, msg, ...) func
+#define THROW_PN(func, err) func
+#define THROW_PN_MSG(func, err, msg, ...) func
+
+#endif
 
 #ifdef __cplusplus
 }

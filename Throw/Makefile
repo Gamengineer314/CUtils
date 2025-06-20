@@ -16,8 +16,6 @@ obj/throw.o: src/throw.c
 obj/libthrow.so: obj/throw.o
 	@echo "Compiling shared library..."
 	@gcc -fpic -shared $^ -o $@
-#sudo cp obj/libthrow.so /usr/local/lib
-#sudo cp include/throw.h /usr/local/include
 
 clean:
 	@rm -f bin/* obj/*
