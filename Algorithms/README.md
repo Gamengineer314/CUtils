@@ -42,3 +42,4 @@ The `algorithm.h` file can now be included anywhere in your program to use the r
 - `map` : hash map using separate chaining
 - `tree` : red-black binary search tree
 - `sort` : insertion sort, quick sort, radix sort
+- `search` : binary search

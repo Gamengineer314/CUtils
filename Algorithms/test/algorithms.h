@@ -31,4 +31,7 @@
 #define SORT_KEY SORT_SIGNED
 #include "sort.h"
 
+#define GEN_TYPE int
+#include "search.h"
+
 #endif

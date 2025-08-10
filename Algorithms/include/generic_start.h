@@ -5,7 +5,7 @@
 // GEN_KEY : key type (default: int32_t)
 // GEN_NAME : name of the type (added as a suffix to every function and struct name) (default: "")
 // GEN_SIZE : type used for sizes and indices (must be able to contain the number of items) (default: int32_t)
-// GEN_COMPARE : comparator for keys or items (default: a - b)
+// GEN_COMPARE : comparator for keys or items (default: a > b ? 1 : a < b ? -1 : 0)
 // GEN_EQUALS : equality function for keys or items (default: a == b)
 // GEN_COMPARE_TYPE : type used for comparisons (returned by GEN_COMPARE) (default: int)
 
@@ -28,7 +28,7 @@
 #endif
 
 #ifndef GEN_COMPARE
-#define GEN_COMPARE(a, b) (((a) > (b)) - ((a) < (b)))
+#define GEN_COMPARE(a, b) ((a) > (b) ? 1 : (a) < (b) ? -1 : 0)
 #endif
 
 #ifndef GEN_EQUALS
