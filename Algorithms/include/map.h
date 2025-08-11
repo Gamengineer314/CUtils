@@ -278,7 +278,7 @@ void GEN_FUNC(remove)(GEN_COL* map, GEN_KEY key);
  * @brief Start iterating on a map
  * @return The iterator
 **/
-inline GEN_STRUCT(iter) GEN_FUNC(iter)() {
+inline GEN_STRUCT(iter) GEN_FUNC(iter)(void) {
     return (GEN_STRUCT(iter)) { .bucket = -1, .index = -1 };
 }
 

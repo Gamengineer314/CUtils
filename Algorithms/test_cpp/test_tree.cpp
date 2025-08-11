@@ -7,7 +7,7 @@ using namespace std;
 
 #define N 10000
 
-static void map_benchmark() {
+static void tree_benchmark() {
     srand(314);
     int keys[N];
     for (int i = 0; i < N; i++) keys[i] = rand();
@@ -27,6 +27,6 @@ static void map_benchmark() {
 
 int main() {
     TIME("CPP tree benchmark",
-        map_benchmark();
+        tree_benchmark();
     )
 }

@@ -223,11 +223,62 @@ void GEN_FUNC(remove)(GEN_COL* tree, GEN_KEY key);
  * @brief Start iterating on a tree
  * @return The iterator
 **/
-inline GEN_STRUCT(iter) GEN_FUNC(iter)() {
+inline GEN_STRUCT(iter) GEN_FUNC(iter)(void) {
     GEN_STRUCT(iter) iter;
     iter.top = 0;
     iter.stack[0] = 0;
     return iter;
+}
+
+
+/**
+ * @brief Start iterating on a sub-tree
+ * @param tree The tree
+ * @param start Start key of the sub-tree (inclusive)
+ * @return The iterator
+**/
+inline GEN_STRUCT(iter) GEN_FUNC(iterAfter)(GEN_COL* tree, GEN_KEY start) {
+    GEN_STRUCT(iter) iter;
+    iter.top = 0;
+    int top = -1;
+    GEN_SIZE prevIndex = 0;
+    GEN_SIZE index = tree->items[0].item.children[1];
+    while (index != 0) {
+        index &= ~TREE_RED;
+        GEN_STRUCT(item)* item = &tree->items[index].item;
+        GEN_COMPARE_TYPE cmp = GEN_COMPARE(start, item->key);
+        if (cmp <= 0) iter.stack[++top] = index;
+        if (cmp > 0) {
+            iter.top = top + 1;
+            prevIndex = index;
+        }
+        index = item->children[cmp > 0];
+    }
+    iter.stack[iter.top] = prevIndex;
+    return iter;
+}
+
+
+/**
+ * @brief Start iterating on a sub-tree
+ * @param tree The tree
+ * @param end End key of the sub-tree (inclusive)
+ * @return The iterator
+**/
+inline GEN_STRUCT(iter) GEN_FUNC(iterBefore)(GEN_COL* tree, GEN_KEY end) {
+    return GEN_FUNC(iter)();
+}
+
+
+/**
+ * @brief Start iterating on a sub-tree
+ * @param tree The tree
+ * @param start Start key of the sub-tree (inclusive)
+ * @param end End key of the sub-tree (exclusive)
+ * @return The iterator
+**/
+inline GEN_STRUCT(iter) GEN_FUNC(iterBetween)(GEN_COL* tree, GEN_KEY start, GEN_KEY end) {
+    return GEN_FUNC(iterAfter)(tree, start);
 }
 
 
@@ -244,8 +295,8 @@ inline GEN_STRUCT(item)* GEN_FUNC(next)(GEN_COL* tree, GEN_STRUCT(iter)* iter) {
         GEN_SIZE index = item->children[1];
         do {
             index &= ~TREE_RED;
-            iter->stack[++iter->top] = index;
             item = &tree->items[index].item;
+            iter->stack[++iter->top] = index;
             index = item->children[0];
         } while (index != 0);
         return item;
@@ -253,6 +304,85 @@ inline GEN_STRUCT(item)* GEN_FUNC(next)(GEN_COL* tree, GEN_STRUCT(iter)* iter) {
     else if (iter->top >= 0) return &tree->items[iter->stack[iter->top]].item;
     return NULL;
 }
+
+
+/**
+ * @brief Get the next item while iterating on a sub-tree
+ * @param tree The tree
+ * @param start Start key of the sub-tree (inclusive)
+ * @param iter The iterator
+ * @return Pointer to the item, NULL if no more items
+**/
+inline GEN_STRUCT(item)* GEN_FUNC(nextAfter)(GEN_COL* tree, GEN_KEY start, GEN_STRUCT(iter)* iter) {
+    return GEN_FUNC(next)(tree, iter);
+}
+
+
+/**
+ * @brief Get the next item while iterating on a sub-tree
+ * @param tree The tree
+ * @param end End key of the sub-tree (exclusive)
+ * @param iter The iterator
+ * @return Pointer to the item, NULL if no more items
+**/
+inline GEN_STRUCT(item)* GEN_FUNC(nextBefore)(GEN_COL* tree, GEN_KEY end, GEN_STRUCT(iter)* iter) {
+    GEN_STRUCT(item)* item = GEN_FUNC(next)(tree, iter);
+    if (item == NULL || GEN_COMPARE(item->key, end) >= 0) return NULL;
+    return item;
+}
+
+
+/**
+ * @brief Get the next item while iterating on a sub-tree
+ * @param tree The tree
+ * @param start Start key of the sub-tree (inclusive)
+ * @param end End key of the sub-tree (exclusive)
+ * @param iter The iterator
+ * @return Pointer to the item, NULL if no more items
+**/
+inline GEN_STRUCT(item)* GEN_FUNC(nextBetween)(GEN_COL* tree, GEN_KEY start, GEN_KEY end, GEN_STRUCT(iter)* iter) {
+    return GEN_FUNC(nextBefore)(tree, end, iter);
+}
+
+
+#ifdef TREE_SIZE
+
+GEN_SIZE GEN_FUNC_(countAfter)(GEN_COL* tree, GEN_KEY start, GEN_SIZE index);
+GEN_SIZE GEN_FUNC_(countBefore)(GEN_COL* tree, GEN_KEY end, GEN_SIZE index);
+
+
+/**
+ * @brief Count the number of items in a sub-tree
+ * @param tree The tree
+ * @param start Start key of the sub-tree (inclusive)
+ * @return Number of items in the sub-tree
+**/
+inline GEN_SIZE GEN_FUNC(countAfter)(GEN_COL* tree, GEN_KEY start) {
+    return GEN_FUNC_(countAfter)(tree, start, tree->items[0].item.children[1]);
+}
+
+
+/**
+ * @brief Count the number of items in a sub-tree
+ * @param tree The tree
+ * @param end End key of the sub-tree (exclusive)
+ * @return Number of items in the sub-tree
+**/
+inline GEN_SIZE GEN_FUNC(countBefore)(GEN_COL* tree, GEN_KEY end) {
+    return GEN_FUNC_(countBefore)(tree, end, tree->items[0].item.children[1]);
+}
+
+
+/**
+ * @brief Count the number of items in a sub-tree
+ * @param tree The tree
+ * @param start Start key of the sub-tree (inclusive)
+ * @param end End key of the sub-tree (exclusive)
+ * @return Number of items in the sub-tree
+**/
+GEN_SIZE GEN_FUNC(countBetween)(GEN_COL* tree, GEN_KEY start, GEN_KEY end);
+
+#endif
 
 
 #ifdef GEN_SOURCE
@@ -269,10 +399,19 @@ GEN_TYPE GEN_FUNC(getOrDefault)(GEN_COL* tree, GEN_KEY key, GEN_TYPE value);
 void GEN_FUNC(tryAdd)(GEN_COL* tree, GEN_KEY key, GEN_TYPE value);
 void GEN_FUNC(setOrAdd)(GEN_COL* tree, GEN_KEY key, GEN_TYPE value);
 GEN_STRUCT(iter) GEN_FUNC(iter)();
+GEN_STRUCT(iter) GEN_FUNC(iterAfter)(GEN_COL* tree, GEN_KEY start);
+GEN_STRUCT(iter) GEN_FUNC(iterBefore)(GEN_COL* tree, GEN_KEY end);
+GEN_STRUCT(iter) GEN_FUNC(iterBetween)(GEN_COL* tree, GEN_KEY start, GEN_KEY end);
 GEN_STRUCT(item)* GEN_FUNC(next)(GEN_COL* tree, GEN_STRUCT(iter)* iter);
-
+GEN_STRUCT(item)* GEN_FUNC(nextAfter)(GEN_COL* tree, GEN_KEY start, GEN_STRUCT(iter)* iter);
+GEN_STRUCT(item)* GEN_FUNC(nextBefore)(GEN_COL* tree, GEN_KEY end, GEN_STRUCT(iter)* iter);
+GEN_STRUCT(item)* GEN_FUNC(nextBetween)(GEN_COL* tree, GEN_KEY start, GEN_KEY end, GEN_STRUCT(iter)* iter);
 void GEN_FUNC_(maintainAdd)(GEN_COL* tree, GEN_STRUCT_(dir)* stack, GEN_STRUCT_(dir)* top);
 GEN_STRUCT_(dir)* GEN_FUNC_(maintainRemove)(GEN_COL* tree, GEN_STRUCT_(dir)* stack, GEN_STRUCT_(dir)* top);
+#ifdef TREE_SIZE
+GEN_SIZE GEN_FUNC(countAfter)(GEN_COL* tree, GEN_KEY start);
+GEN_SIZE GEN_FUNC(countBefore)(GEN_COL* tree, GEN_KEY end);
+#endif
 
 
 inline void GEN_FUNC_(grow)(GEN_COL* tree) {
@@ -423,41 +562,44 @@ GEN_STRUCT(item)* GEN_FUNC(ref)(GEN_COL* tree, GEN_KEY key) {
 GEN_STRUCT(item)* GEN_FUNC(refOrEmpty)(GEN_COL* tree, GEN_KEY key) {
     GEN_FUNC_(grow)(tree);
     GEN_STRUCT_(dir) stack[TREE_STACK];
-    GEN_STRUCT_(dir)* top = stack;
-    GEN_SIZE index = 0;
+    stack->index = 0;
+    stack->dir = 1;
+    GEN_STRUCT_(dir)* top = stack + 1;
+
+    // Find item
     GEN_STRUCT(item)* item = &tree->items[0].item;
-    GEN_COMPARE_TYPE cmp = 0;
     GEN_SIZE dir = 1;
-    do {
+    GEN_SIZE index = item->children[1];
+    while (index != 0) {
+        index &= ~TREE_RED;
+        item = &tree->items[index].item;
+        GEN_COMPARE_TYPE cmp = GEN_COMPARE(key, item->key);
+        if (cmp == 0) return item;
+        dir = cmp > 0;
         top->index = index;
         top->dir = dir;
         top++;
-        GEN_SIZE nextIndex = item->children[dir];
-        if (nextIndex == 0) {
-            tree->length++;
-            GEN_SIZE i;
-            if (tree->reusable != -1) {
-                i = tree->reusable;
-                tree->reusable = tree->items[i].reusable;
-            }
-            else i = tree->length;
-            GEN_STRUCT(item)* child = &tree->items[i].item;
-            child->key = key;
-            child->children[0] = 0;
-            child->children[1] = 0;
+        index = item->children[dir];
+    }
+    
+    // Add item
+    tree->length++;
+    GEN_SIZE i;
+    if (tree->reusable != -1) {
+        i = tree->reusable;
+        tree->reusable = tree->items[i].reusable;
+    }
+    else i = tree->length;
+    GEN_STRUCT(item)* child = &tree->items[i].item;
+    child->key = key;
+    child->children[0] = 0;
+    child->children[1] = 0;
 #ifdef TREE_SIZE
-            child->size = 1;
+    child->size = 1;
 #endif
-            item->children[dir] = i | TREE_RED;
-            GEN_FUNC_(maintainAdd)(tree, stack, top);
-            return child;
-        }
-        index = nextIndex & ~TREE_RED;
-        item = &tree->items[index].item;
-        cmp = GEN_COMPARE(key, item->key);
-        dir = cmp > 0;
-    } while (cmp != 0);
-    return item;
+    item->children[dir] = i | TREE_RED;
+    GEN_FUNC_(maintainAdd)(tree, stack, top);
+    return child;
 }
 
 
@@ -530,6 +672,56 @@ void GEN_FUNC(remove)(GEN_COL* tree, GEN_KEY key) {
     }
 #endif
 }
+
+
+#ifdef TREE_SIZE
+
+GEN_SIZE GEN_FUNC_(countAfter)(GEN_COL* tree, GEN_KEY start, GEN_SIZE index) {
+    GEN_SIZE count = 0;
+    while (index != 0) {
+        GEN_STRUCT(item)* item = &tree->items[index & ~TREE_RED].item;
+        GEN_COMPARE_TYPE cmp = GEN_COMPARE(start, item->key);
+        if (cmp > 0) index = item->children[1];
+        else {
+            count += 1 + tree->items[item->children[1] & ~TREE_RED].item.size;
+            index = item->children[0];
+        }
+    }
+    return count;
+}
+
+
+GEN_SIZE GEN_FUNC_(countBefore)(GEN_COL* tree, GEN_KEY end, GEN_SIZE index) {
+    GEN_SIZE count = 0;
+    while (index != 0) {
+        GEN_STRUCT(item)* item = &tree->items[index & ~TREE_RED].item;
+        GEN_COMPARE_TYPE cmp = GEN_COMPARE(end, item->key);
+        if (cmp <= 0) index = item->children[0];
+        else {
+            count += 1 + tree->items[item->children[0] & ~TREE_RED].item.size;
+            index = item->children[1];
+        }
+    }
+    return count;
+}
+
+
+GEN_SIZE GEN_FUNC(countBetween)(GEN_COL* tree, GEN_KEY start, GEN_KEY end) {
+    GEN_SIZE index = tree->items[0].item.children[1];
+    while (index != 0) {
+        GEN_STRUCT(item)* item = &tree->items[index & ~TREE_RED].item;
+        GEN_COMPARE_TYPE cmpStart = GEN_COMPARE(start, item->key);
+        GEN_COMPARE_TYPE cmpEnd = GEN_COMPARE(end, item->key);
+        if (cmpStart > 0) index = item->children[1];
+        else if (cmpEnd < 0) index = item->children[0];
+        else return 1 + 
+            GEN_FUNC_(countAfter)(tree, start, item->children[0]) +
+            GEN_FUNC_(countBefore)(tree, end, item->children[1]);
+    }
+    return 0;
+}
+
+#endif
 
 
 #endif

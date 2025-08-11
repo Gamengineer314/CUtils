@@ -31,11 +31,42 @@ static void tree_test() {
     int sortedKeys[N];
     memcpy(sortedKeys, keys, sizeof(int) * N);
     sort(sortedKeys, N);
-    tree_iter_t iter = tree_iter(&tree);
+    tree_iter_t iter = tree_iter();
     tree_item_t* item;
     int i = 0;
     while ((item = tree_next(&tree, &iter))) {
         if (item->key != sortedKeys[i++]) THROW_ERR("Incorrect key");
+    }
+    if (i != N) THROW_ERR("Missing keys");
+
+    for (int i = 0; i < 1000; i++) {
+        int start = rand(), end = rand();
+        int startIndex = search(sortedKeys, start, N);
+        int endIndex = search(sortedKeys, end, N);
+        tree_iter_t iter = tree_iterAfter(&tree, start);
+        tree_item_t* item;
+        int j = 0;
+        while ((item = tree_nextAfter(&tree, start, &iter))) {
+            if (item->key != sortedKeys[startIndex + j++]) THROW_ERR("Incorrect key");
+        }
+        if (j != N - startIndex) THROW_ERR("Missing keys");
+        if (j != tree_countAfter(&tree, start)) THROW_ERR("Incorrect count");
+        iter = tree_iterBefore(&tree, end);
+        j = 0;
+        while ((item = tree_nextBefore(&tree, end, &iter))) {
+            if (item->key != sortedKeys[j++]) THROW_ERR("Incorrect key");
+        }
+        if (j != endIndex) THROW_ERR("Missing keys");
+        if (j != tree_countBefore(&tree, end)) THROW_ERR("Incorrect count");
+        if (endIndex >= startIndex) {
+            iter = tree_iterBetween(&tree, start, end);
+            j = 0;
+            while ((item = tree_nextBetween(&tree, start, end, &iter))) {
+                if (item->key != sortedKeys[startIndex + j++]) THROW_ERR("Incorrect key");
+            }
+            if (j != endIndex - startIndex) THROW_ERR("Missing keys");
+            if (j != tree_countBetween(&tree, start, end)) THROW_ERR("Incorrect count");
+        }
     }
 
     for (int i = 0; i < N; i++) {
@@ -77,7 +108,7 @@ static void tree_benchmark() {
 
 int main() {
     TIME("Tree benchmark",
-        tree_benchmark();
+        //tree_benchmark();
     )
     tree_test();
 }
