@@ -67,10 +67,29 @@ static void tree_test() {
             if (j != endIndex - startIndex) THROW_ERR("Missing keys");
             if (j != tree_countBetween(&tree, start, end)) THROW_ERR("Incorrect count");
         }
+        item = tree_floor(&tree, start);
+        if (item == NULL) {
+            if (startIndex > 0 || sortedKeys[0] == start) THROW_ERR("Floor not found");
+        }
+        else {
+            if (sortedKeys[startIndex] == start) {
+                if (item->key != start) THROW_ERR("Incorrect floor");
+            }
+            else {
+                if (startIndex == 0 || item->key != sortedKeys[startIndex - 1]) THROW_ERR("Incorrect floor");
+            }
+        }
+        item = tree_ceil(&tree, start);
+        if (item == NULL) {
+            if (startIndex < N) THROW_ERR("Ceil not found");
+        }
+        else {
+            if (startIndex == N || item->key != sortedKeys[startIndex]) THROW_ERR("Incorrect ceil");
+        }
     }
 
     for (int i = 0; i < N; i++) {
-        if (!tree_contains(&tree, keys[i])) THROW_ERR("Key not found %d", keys[i]);
+        if (!tree_contains(&tree, keys[i])) THROW_ERR("Key not found");
         if (tree_get(&tree, keys[i]) != i) THROW_ERR("Incorrect value");
         if (tree_getOrDefault(&tree, keys[i], 314) != i) THROW_ERR("Incorrect value");
         tree_item_t* ref = tree_ref(&tree, keys[i]);
@@ -82,7 +101,7 @@ static void tree_test() {
         tree_remove(&tree, keys[i]);
         tree_remove(&tree, keys[i]);
     }
-    if (tree.length != 0) THROW_ERR("Incorrect length %d");
+    if (tree.length != 0) THROW_ERR("Incorrect length");
 
     tree_free(&tree);
 }
@@ -108,7 +127,7 @@ static void tree_benchmark() {
 
 int main() {
     TIME("Tree benchmark",
-        //tree_benchmark();
+        tree_benchmark();
     )
     tree_test();
 }

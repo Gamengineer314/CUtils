@@ -345,6 +345,22 @@ inline GEN_STRUCT(item)* GEN_FUNC(nextBetween)(GEN_COL* tree, GEN_KEY start, GEN
 }
 
 
+/**
+ * @brief Get the closest item with a key smaller or equal to a given key in a tree
+ * @param tree The tree
+ * @param key The key
+**/
+GEN_STRUCT(item)* GEN_FUNC(floor)(GEN_COL* tree, GEN_KEY key);
+
+
+/**
+ * @brief Get the closest item with a key greater than a given key in a tree
+ * @param tree The tree
+ * @param key The key
+**/
+GEN_STRUCT(item)* GEN_FUNC(ceil)(GEN_COL* tree, GEN_KEY key);
+
+
 #ifdef TREE_SIZE
 
 GEN_SIZE GEN_FUNC_(countAfter)(GEN_COL* tree, GEN_KEY start, GEN_SIZE index);
@@ -671,6 +687,38 @@ void GEN_FUNC(remove)(GEN_COL* tree, GEN_KEY key) {
         tree->items[top->index].item.size--;
     }
 #endif
+}
+
+
+GEN_STRUCT(item)* GEN_FUNC(floor)(GEN_COL* tree, GEN_KEY key) {
+    GEN_STRUCT(item)* floor = NULL;
+    GEN_SIZE index = tree->items[0].item.children[1];
+    while (index != 0) {
+        GEN_STRUCT(item)* item = &tree->items[index & ~TREE_RED].item;
+        GEN_COMPARE_TYPE cmp = GEN_COMPARE(key, item->key);
+        if (cmp < 0) index = item->children[0];
+        else {
+            floor = item;
+            index = item->children[1];
+        }
+    }
+    return floor;
+}
+
+
+GEN_STRUCT(item)* GEN_FUNC(ceil)(GEN_COL* tree, GEN_KEY key) {
+    GEN_STRUCT(item)* ceil = NULL;
+    GEN_SIZE index = tree->items[0].item.children[1];
+    while (index != 0) {
+        GEN_STRUCT(item)* item = &tree->items[index & ~TREE_RED].item;
+        GEN_COMPARE_TYPE cmp = GEN_COMPARE(key, item->key);
+        if (cmp > 0) index = item->children[1];
+        else {
+            ceil = item;
+            index = item->children[0];
+        }
+    }
+    return ceil;
 }
 
 
