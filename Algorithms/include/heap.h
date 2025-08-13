@@ -296,16 +296,15 @@ void GEN_FUNC_(removeFirst)(GEN_COL* heap) {
 
 void GEN_FUNC_(heapifyUp)(GEN_COL* heap, GEN_SIZE index, HEAP_NODE node) {
     GEN_KEY key = HEAP_KEY(heap, node);
-    GEN_SIZE parentIndex = index >> 1;
-    HEAP_NODE parent = heap->heap[parentIndex];
-    while (index > 1 && GEN_COMPARE(key, HEAP_KEY(heap, parent)) < 0) {
+    while (index > 1) {
+        GEN_SIZE parentIndex = index >> 1;
+        HEAP_NODE parent = heap->heap[parentIndex];
+        if (GEN_COMPARE(key, HEAP_KEY(heap, parent)) >= 0) break;
         heap->heap[index] = parent;
 #ifdef HEAP_MODIFIABLE
         heap->items[parent].item.index = index;
 #endif
         index = parentIndex;
-        parentIndex >>= 1;
-        parent = heap->heap[parentIndex];
     }
     heap->heap[index] = node;
 #ifdef HEAP_MODIFIABLE
