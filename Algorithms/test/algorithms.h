@@ -11,7 +11,7 @@
 #define GEN_TYPE int
 #include "heap.h"
 
-#define GEN_NAME mod
+#define GEN_SUFFIX mod
 #define GEN_KEY int
 #define GEN_TYPE int
 #define HEAP_MODIFIABLE

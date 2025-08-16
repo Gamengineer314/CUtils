@@ -3,7 +3,7 @@
 // Common parameters : (not all parameters are applicable for every algorithm)
 // GEN_TYPE : data type (default: void*)
 // GEN_KEY : key type (default: int32_t)
-// GEN_NAME : name of the type (added as a suffix to every function and struct name) (default: "")
+// GEN_SUFFIX : suffix added after every function and struct name (default: "")
 // GEN_SIZE : type used for sizes and indices (must be able to contain the number of items) (default: int32_t)
 // GEN_COMPARE : comparator for keys or items (default: a > b ? 1 : a < b ? -1 : 0)
 // GEN_EQUALS : equality function for keys or items (default: a == b)
@@ -13,10 +13,10 @@
 #define GEN_TYPE void*
 #endif
 
-#ifdef GEN_NAME
-#define GEN_SUFFIX GEN_CAT2(_, GEN_NAME)
+#ifdef GEN_SUFFIX
+#define GEN_SUFFIX_ GEN_CAT2(_, GEN_SUFFIX)
 #else
-#define GEN_SUFFIX
+#define GEN_SUFFIX_
 #endif
 
 #ifndef GEN_SIZE
@@ -54,11 +54,8 @@
 #define GEN_CAT5(A, B, C, D, E) _GEN_CAT5(A, B, C, D, E)
 
 // Struct and function names
-#define GEN_COL GEN_CAT3(GEN_PREFIX, GEN_SUFFIX, _t)
-#define GEN_ALGO GEN_CAT2(GEN_PREFIX, GEN_SUFFIX)
-#define GEN_STRUCT(name) GEN_CAT5(GEN_PREFIX, _, name, GEN_SUFFIX, _t)
-#define GEN_STRUCT_(name) GEN_CAT2(_, GEN_STRUCT(name))
-#define GEN_FUNC(name) GEN_CAT4(GEN_PREFIX, _, name, GEN_SUFFIX)
-#define GEN_FUNC_(name) GEN_CAT2(_, GEN_FUNC(name))
+#define GEN_ALGO GEN_CAT2(GEN_PREFIX, GEN_SUFFIX_)
+#define GEN_NAME(name) GEN_CAT4(GEN_PREFIX, _, name, GEN_SUFFIX_)
+#define GEN_NAME_(name) GEN_CAT5(_, GEN_PREFIX, _, name, GEN_SUFFIX_)
 
 #endif

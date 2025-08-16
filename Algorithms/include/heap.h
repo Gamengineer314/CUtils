@@ -15,7 +15,7 @@
 #define HEAP_NODE GEN_SIZE
 #define HEAP_KEY(heap, node) ((heap)->items[node].item.key)
 #else
-#define HEAP_NODE GEN_STRUCT(item)
+#define HEAP_NODE GEN_NAME(item)
 #define HEAP_KEY(heap, node) ((node).key)
 #endif
 
@@ -35,7 +35,7 @@ typedef struct {
 #endif
     GEN_KEY key;
     GEN_TYPE value;
-} GEN_STRUCT(item);
+} GEN_NAME(item);
 
 
 /**
@@ -44,9 +44,9 @@ typedef struct {
  * @param reusable Index of the next reusable item if the item is not used
 **/
 typedef union {
-    GEN_STRUCT(item) item;
+    GEN_NAME(item) item;
     GEN_SIZE reusable;
-} GEN_STRUCT(reusable);
+} GEN_NAME(reusable);
 
 
 /**
@@ -59,12 +59,12 @@ typedef union {
 typedef struct {
     HEAP_NODE* heap;
 #ifdef HEAP_INDEXED
-    GEN_STRUCT(reusable)* items; // Reusable items
+    GEN_NAME(reusable)* items; // Reusable items
     GEN_SIZE reusable; // Index of the first reusable item in [items]
 #endif
     GEN_SIZE length;
     GEN_SIZE capacity; // Size of [heap] and [items]
-} GEN_COL;
+} GEN_ALGO;
 
 
 /**
@@ -72,10 +72,10 @@ typedef struct {
  * @param heap The heap
  * @param capacity Initial capacity
 **/
-inline void GEN_FUNC(init)(GEN_COL* heap, GEN_SIZE capacity) {
+inline void GEN_NAME(init)(GEN_ALGO* heap, GEN_SIZE capacity) {
     heap->heap = THROW_PN(malloc(sizeof(HEAP_NODE) * capacity), heap->heap);
 #ifdef HEAP_INDEXED
-    heap->items = THROW_PN(malloc(sizeof(GEN_STRUCT(reusable)) * capacity), heap->heap);
+    heap->items = THROW_PN(malloc(sizeof(GEN_NAME(reusable)) * capacity), heap->heap);
     heap->reusable = -1;
 #endif
     heap->length = 0;
@@ -88,9 +88,9 @@ inline void GEN_FUNC(init)(GEN_COL* heap, GEN_SIZE capacity) {
  * @param capacity Initial capacity
  * @return The heap
 **/
-inline GEN_COL GEN_FUNC(new)(GEN_SIZE capacity) {
-    GEN_COL heap;
-    GEN_FUNC(init)(&heap, capacity);
+inline GEN_ALGO GEN_NAME(new)(GEN_SIZE capacity) {
+    GEN_ALGO heap;
+    GEN_NAME(init)(&heap, capacity);
     return heap;
 }
 
@@ -99,7 +99,7 @@ inline GEN_COL GEN_FUNC(new)(GEN_SIZE capacity) {
  * @brief Free a heap
  * @param heap The heap
 **/
-inline void GEN_FUNC(free)(GEN_COL* heap) {
+inline void GEN_NAME(free)(GEN_ALGO* heap) {
     free(heap->heap);
 #ifdef HEAP_INDEXED
     free(heap->items);
@@ -110,7 +110,7 @@ inline void GEN_FUNC(free)(GEN_COL* heap) {
 /**
  * @brief Grow a heap if it is full
 **/
-void GEN_FUNC_(grow)(GEN_COL* heap);
+void GEN_NAME_(grow)(GEN_ALGO* heap);
 
 
 /**
@@ -119,7 +119,7 @@ void GEN_FUNC_(grow)(GEN_COL* heap);
  * @param index Index of the node
  * @param node The node
 **/
-void GEN_FUNC_(heapifyUp)(GEN_COL* heap, GEN_SIZE index, HEAP_NODE node);
+void GEN_NAME_(heapifyUp)(GEN_ALGO* heap, GEN_SIZE index, HEAP_NODE node);
 
 
 /**
@@ -128,7 +128,7 @@ void GEN_FUNC_(heapifyUp)(GEN_COL* heap, GEN_SIZE index, HEAP_NODE node);
  * @param index Index of the node
  * @param node The node
 **/
-void GEN_FUNC_(heapifyDown)(GEN_COL* heap, GEN_SIZE index, HEAP_NODE node);
+void GEN_NAME_(heapifyDown)(GEN_ALGO* heap, GEN_SIZE index, HEAP_NODE node);
 
 
 #ifdef HEAP_INDEXED
@@ -139,14 +139,14 @@ void GEN_FUNC_(heapifyDown)(GEN_COL* heap, GEN_SIZE index, HEAP_NODE node);
  * @param key Key of the item
  * @return Index of the added item
 **/
-GEN_SIZE GEN_FUNC_(addEmpty)(GEN_COL* heap, GEN_KEY key);
+GEN_SIZE GEN_NAME_(addEmpty)(GEN_ALGO* heap, GEN_KEY key);
 
 
 /**
  * @brief Remove the first item in a heap
  * @param heap The heap
 **/
-void GEN_FUNC_(removeFirst)(GEN_COL* heap);
+void GEN_NAME_(removeFirst)(GEN_ALGO* heap);
 
 #endif
 
@@ -159,21 +159,21 @@ void GEN_FUNC_(removeFirst)(GEN_COL* heap);
  * @return Index of the added item if [HEAP_MODIFIABLE]
 **/
 #ifdef HEAP_MODIFIABLE
-inline GEN_SIZE GEN_FUNC(add)(GEN_COL* heap, GEN_KEY key, GEN_TYPE value) {
+inline GEN_SIZE GEN_NAME(add)(GEN_ALGO* heap, GEN_KEY key, GEN_TYPE value) {
 #else
-inline void GEN_FUNC(add)(GEN_COL* heap, GEN_KEY key, GEN_TYPE value) {
+inline void GEN_NAME(add)(GEN_ALGO* heap, GEN_KEY key, GEN_TYPE value) {
 #endif
 #ifdef HEAP_INDEXED
 #ifdef HEAP_MODIFIABLE
-    GEN_SIZE i = GEN_FUNC_(addEmpty)(heap, key);
+    GEN_SIZE i = GEN_NAME_(addEmpty)(heap, key);
     heap->items[i].item.value = value;
     return i;
 #else
-    heap->items[GEN_FUNC_(addEmpty)(heap, key)].value = value;
+    heap->items[GEN_NAME_(addEmpty)(heap, key)].value = value;
 #endif
 #else
-    GEN_FUNC_(grow)(heap);
-    GEN_FUNC_(heapifyUp)(heap, ++heap->length, (GEN_STRUCT(item)) { .key = key, .value = value });
+    GEN_NAME_(grow)(heap);
+    GEN_NAME_(heapifyUp)(heap, ++heap->length, (GEN_NAME(item)) { .key = key, .value = value });
 #endif
 }
 
@@ -183,13 +183,13 @@ inline void GEN_FUNC(add)(GEN_COL* heap, GEN_KEY key, GEN_TYPE value) {
  * @param heap The heap
  * @return The item
 **/
-inline GEN_STRUCT(item) GEN_FUNC(pop)(GEN_COL* heap) {
+inline GEN_NAME(item) GEN_NAME(pop)(GEN_ALGO* heap) {
 #ifdef HEAP_INDEXED
-    GEN_STRUCT(item) item = heap->items[heap->heap[1]].item;
-    GEN_FUNC_(removeFirst)(heap);
+    GEN_NAME(item) item = heap->items[heap->heap[1]].item;
+    GEN_NAME_(removeFirst)(heap);
 #else
-    GEN_STRUCT(item) item = heap->heap[1];
-    GEN_FUNC_(heapifyDown)(heap, 1, heap->heap[heap->length--]);
+    GEN_NAME(item) item = heap->heap[1];
+    GEN_NAME_(heapifyDown)(heap, 1, heap->heap[heap->length--]);
 #endif
     return item;
 }
@@ -203,15 +203,15 @@ inline GEN_STRUCT(item) GEN_FUNC(pop)(GEN_COL* heap) {
  * @param index Index of the item
  * @param newKey New key of the item
 **/
-inline void GEN_FUNC(changeKey)(GEN_COL* heap, GEN_SIZE index, GEN_KEY newKey) {
+inline void GEN_NAME(changeKey)(GEN_ALGO* heap, GEN_SIZE index, GEN_KEY newKey) {
     heap->items[index].item.key = newKey;
     GEN_SIZE heapIndex = heap->items[index].item.index;
     GEN_SIZE parent = heap->heap[heapIndex >> 1];
     if (heapIndex != 1 && GEN_COMPARE(heap->items[parent].item.key, newKey) > 0) {
-        GEN_FUNC_(heapifyUp)(heap, heapIndex, heap->heap[heapIndex]);
+        GEN_NAME_(heapifyUp)(heap, heapIndex, heap->heap[heapIndex]);
     }
     else {
-        GEN_FUNC_(heapifyDown)(heap, heapIndex, heap->heap[heapIndex]);
+        GEN_NAME_(heapifyDown)(heap, heapIndex, heap->heap[heapIndex]);
     }
 }
 
@@ -221,15 +221,15 @@ inline void GEN_FUNC(changeKey)(GEN_COL* heap, GEN_SIZE index, GEN_KEY newKey) {
  * @param heap The heap
  * @param index Index of the item
 **/
-inline void GEN_FUNC(remove)(GEN_COL* heap, GEN_SIZE index) {
+inline void GEN_NAME(remove)(GEN_ALGO* heap, GEN_SIZE index) {
     GEN_SIZE heapIndex = heap->items[index].item.index;
     GEN_SIZE parent = heap->heap[heapIndex >> 1];
     GEN_SIZE last = heap->heap[heap->length--];
     if (heapIndex != 1 && GEN_COMPARE(heap->items[parent].item.key, heap->items[last].item.key) > 0) {
-        GEN_FUNC_(heapifyUp)(heap, heapIndex, last);
+        GEN_NAME_(heapifyUp)(heap, heapIndex, last);
     }
     else {
-        GEN_FUNC_(heapifyDown)(heap, heapIndex, last);
+        GEN_NAME_(heapifyDown)(heap, heapIndex, last);
     }
     heap->items[index].reusable = heap->reusable;
     heap->reusable = index;
@@ -241,28 +241,28 @@ inline void GEN_FUNC(remove)(GEN_COL* heap, GEN_SIZE index) {
 #ifdef GEN_SOURCE
 
 
-void GEN_FUNC(init)(GEN_COL* heap, GEN_SIZE capacity);
-GEN_COL GEN_FUNC(new)(GEN_SIZE capacity);
-void GEN_FUNC(free)(GEN_COL* heap);
-void GEN_FUNC_(grow)(GEN_COL* heap);
+void GEN_NAME(init)(GEN_ALGO* heap, GEN_SIZE capacity);
+GEN_ALGO GEN_NAME(new)(GEN_SIZE capacity);
+void GEN_NAME(free)(GEN_ALGO* heap);
+void GEN_NAME_(grow)(GEN_ALGO* heap);
 #ifdef HEAP_MODIFIABLE
-GEN_SIZE GEN_FUNC(add)(GEN_COL* heap, GEN_KEY key, GEN_TYPE value);
+GEN_SIZE GEN_NAME(add)(GEN_ALGO* heap, GEN_KEY key, GEN_TYPE value);
 #else
-void GEN_FUNC(add)(GEN_COL* heap, GEN_KEY key, GEN_TYPE value);
+void GEN_NAME(add)(GEN_ALGO* heap, GEN_KEY key, GEN_TYPE value);
 #endif
-GEN_STRUCT(item) GEN_FUNC(pop)(GEN_COL* heap);
+GEN_NAME(item) GEN_NAME(pop)(GEN_ALGO* heap);
 #ifdef HEAP_MODIFIABLE
-void GEN_FUNC(changeKey)(GEN_COL* heap, GEN_SIZE index, GEN_KEY newKey);
-void GEN_FUNC(remove)(GEN_COL* heap, GEN_SIZE index);
+void GEN_NAME(changeKey)(GEN_ALGO* heap, GEN_SIZE index, GEN_KEY newKey);
+void GEN_NAME(remove)(GEN_ALGO* heap, GEN_SIZE index);
 #endif
 
 
-inline void GEN_FUNC_(grow)(GEN_COL* heap) {
+inline void GEN_NAME_(grow)(GEN_ALGO* heap) {
     if (heap->length >= heap->capacity - 1) {
         heap->capacity <<= 1;
         heap->heap = THROW_PN(realloc(heap->heap, sizeof(HEAP_NODE) * heap->capacity), heap->heap);
 #ifdef HEAP_INDEXED
-        heap->items = THROW_PN(realloc(heap->items, sizeof(GEN_STRUCT(reusable)) * heap->capacity), heap->items);
+        heap->items = THROW_PN(realloc(heap->items, sizeof(GEN_NAME(reusable)) * heap->capacity), heap->items);
 #endif
     }
 }
@@ -270,8 +270,8 @@ inline void GEN_FUNC_(grow)(GEN_COL* heap) {
 
 #ifdef HEAP_INDEXED
 
-GEN_SIZE GEN_FUNC_(addEmpty)(GEN_COL* heap, GEN_KEY key) {
-    GEN_FUNC_(grow)(heap);
+GEN_SIZE GEN_NAME_(addEmpty)(GEN_ALGO* heap, GEN_KEY key) {
+    GEN_NAME_(grow)(heap);
     GEN_SIZE i;
     if (heap->reusable != -1) {
         i = heap->reusable;
@@ -279,22 +279,22 @@ GEN_SIZE GEN_FUNC_(addEmpty)(GEN_COL* heap, GEN_KEY key) {
     }
     else i = heap->length;
     heap->items[i].item.key = key;
-    GEN_FUNC_(heapifyUp)(heap, ++heap->length, i);
+    GEN_NAME_(heapifyUp)(heap, ++heap->length, i);
     return i;
 }
 
 
-void GEN_FUNC_(removeFirst)(GEN_COL* heap) {
+void GEN_NAME_(removeFirst)(GEN_ALGO* heap) {
     GEN_SIZE i = heap->heap[1];
     heap->items[i].reusable = heap->reusable;
     heap->reusable = i;
-    GEN_FUNC_(heapifyDown)(heap, 1, heap->heap[heap->length--]);
+    GEN_NAME_(heapifyDown)(heap, 1, heap->heap[heap->length--]);
 }
 
 #endif
 
 
-void GEN_FUNC_(heapifyUp)(GEN_COL* heap, GEN_SIZE index, HEAP_NODE node) {
+void GEN_NAME_(heapifyUp)(GEN_ALGO* heap, GEN_SIZE index, HEAP_NODE node) {
     GEN_KEY key = HEAP_KEY(heap, node);
     while (index > 1) {
         GEN_SIZE parentIndex = index >> 1;
@@ -313,7 +313,7 @@ void GEN_FUNC_(heapifyUp)(GEN_COL* heap, GEN_SIZE index, HEAP_NODE node) {
 }
 
 
-void GEN_FUNC_(heapifyDown)(GEN_COL* heap, GEN_SIZE index, HEAP_NODE node) {
+void GEN_NAME_(heapifyDown)(GEN_ALGO* heap, GEN_SIZE index, HEAP_NODE node) {
     GEN_KEY key = HEAP_KEY(heap, node);
     GEN_SIZE childIndex = index << 1;
     while (childIndex <= heap->length) {

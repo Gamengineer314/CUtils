@@ -3,7 +3,7 @@
 
 // List of float
 #define GEN_TYPE float
-#define GEN_NAME float
+#define GEN_SUFFIX float
 #include "list.h"
 
 // List of int
@@ -11,7 +11,7 @@
 #include "list.h"
 
 // List of void*
-#define GEN_NAME ptr
+#define GEN_SUFFIX ptr
 #include "list.h"
 
 #endif

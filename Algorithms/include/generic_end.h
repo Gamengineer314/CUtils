@@ -1,7 +1,7 @@
 // Undef parameters for later use
 #undef GEN_TYPE
-#undef GEN_NAME
 #undef GEN_SUFFIX
+#undef GEN_SUFFIX_
 #undef GEN_PREFIX
 #undef GEN_SIZE
 #undef GEN_KEY

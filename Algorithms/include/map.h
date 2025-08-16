@@ -28,7 +28,7 @@ typedef struct {
     GEN_SIZE next;
     GEN_KEY key;
     GEN_TYPE value;
-} GEN_STRUCT(item);
+} GEN_NAME(item);
 
 
 /**
@@ -37,9 +37,9 @@ typedef struct {
  * @param reusable Index of the next reusable item if the item is not used
 **/
 typedef union {
-    GEN_STRUCT(item) item;
+    GEN_NAME(item) item;
     GEN_SIZE reusable;
-} GEN_STRUCT(reusable);
+} GEN_NAME(reusable);
 
 
 /**
@@ -51,12 +51,12 @@ typedef union {
  * @param reusable Index of the first reusable item in [items]
 **/
 typedef struct {
-    GEN_STRUCT(reusable)* items;
+    GEN_NAME(reusable)* items;
     GEN_SIZE* buckets;
     GEN_SIZE length;
     GEN_SIZE mask;
     GEN_SIZE reusable;
-} GEN_COL;
+} GEN_ALGO;
 
 
 /**
@@ -67,7 +67,7 @@ typedef struct {
 typedef struct {
     GEN_SIZE bucket;
     GEN_SIZE index;
-} GEN_STRUCT(iter);
+} GEN_NAME(iter);
 
 
 /**
@@ -75,8 +75,8 @@ typedef struct {
  * @param map The map
  * @param capacity Initial capacity (must be a power of 2)
 **/
-inline void GEN_FUNC(init)(GEN_COL* map, GEN_SIZE capacity) {
-    map->items = THROW_PN(malloc(sizeof(GEN_STRUCT(reusable)) * capacity), map->items);
+inline void GEN_NAME(init)(GEN_ALGO* map, GEN_SIZE capacity) {
+    map->items = THROW_PN(malloc(sizeof(GEN_NAME(reusable)) * capacity), map->items);
     map->buckets = THROW_PN(malloc(sizeof(GEN_SIZE) * capacity << 1), map->buckets);
     memset(map->buckets, -1, sizeof(GEN_SIZE) * capacity << 1);
     map->length = 0;
@@ -90,9 +90,9 @@ inline void GEN_FUNC(init)(GEN_COL* map, GEN_SIZE capacity) {
  * @param capacity Initial capacity (must be a power of 2)
  * @return The map
 **/
-inline GEN_COL GEN_FUNC(new)(GEN_SIZE capacity) {
-    GEN_COL map;
-    GEN_FUNC(init)(&map, capacity);
+inline GEN_ALGO GEN_NAME(new)(GEN_SIZE capacity) {
+    GEN_ALGO map;
+    GEN_NAME(init)(&map, capacity);
     return map;
 }
 
@@ -101,7 +101,7 @@ inline GEN_COL GEN_FUNC(new)(GEN_SIZE capacity) {
  * @brief Free a map
  * @param map The map
 **/
-inline void GEN_FUNC(free)(GEN_COL* map) {
+inline void GEN_NAME(free)(GEN_ALGO* map) {
     free(map->items);
     free(map->buckets);
 }
@@ -114,14 +114,14 @@ inline void GEN_FUNC(free)(GEN_COL* map) {
  * @param key Key of the item
  * @return Pointer to the item (usable until next added item)
 **/
-GEN_STRUCT(item)* GEN_FUNC_(search)(GEN_COL* map, GEN_SIZE index, GEN_KEY key);
+GEN_NAME(item)* GEN_NAME_(search)(GEN_ALGO* map, GEN_SIZE index, GEN_KEY key);
 
 
 /**
  * @brief Grow a map if it is full
  * @param map The map
 **/
-void GEN_FUNC_(grow)(GEN_COL* map);
+void GEN_NAME_(grow)(GEN_ALGO* map);
 
 
 /**
@@ -130,7 +130,7 @@ void GEN_FUNC_(grow)(GEN_COL* map);
  * @param bucket Index of the bucket
  * @return Pointer to the item (usable until next added item)
 **/
-GEN_STRUCT(item)* GEN_FUNC_(addEmpty)(GEN_COL* map, GEN_SIZE bucket);
+GEN_NAME(item)* GEN_NAME_(addEmpty)(GEN_ALGO* map, GEN_SIZE bucket);
 
 
 /**
@@ -139,9 +139,9 @@ GEN_STRUCT(item)* GEN_FUNC_(addEmpty)(GEN_COL* map, GEN_SIZE bucket);
  * @param key Key of the item
  * @return Pointer to the item (usable until next added item), NULL if not found
 **/
-inline GEN_STRUCT(item)* GEN_FUNC(ref)(GEN_COL* map, GEN_KEY key) {
+inline GEN_NAME(item)* GEN_NAME(ref)(GEN_ALGO* map, GEN_KEY key) {
     GEN_SIZE index = map->buckets[MAP_INDEX(MAP_HASH(key), map->mask)];
-    return GEN_FUNC_(search)(map, index, key);
+    return GEN_NAME_(search)(map, index, key);
 }
 
 
@@ -151,12 +151,12 @@ inline GEN_STRUCT(item)* GEN_FUNC(ref)(GEN_COL* map, GEN_KEY key) {
  * @param key Key of the item
  * @return Pointer to the item (usable until next added item)
 **/
-inline GEN_STRUCT(item)* GEN_FUNC(refOrEmpty)(GEN_COL* map, GEN_KEY key) {
-    if (map->length >= map->mask >> 1) GEN_FUNC_(grow)(map);
+inline GEN_NAME(item)* GEN_NAME(refOrEmpty)(GEN_ALGO* map, GEN_KEY key) {
+    if (map->length >= map->mask >> 1) GEN_NAME_(grow)(map);
     GEN_SIZE bucket = MAP_INDEX(MAP_HASH(key), map->mask);
-    GEN_STRUCT(item)* item = GEN_FUNC_(search)(map, map->buckets[bucket], key);
+    GEN_NAME(item)* item = GEN_NAME_(search)(map, map->buckets[bucket], key);
     if (item == NULL) {
-        item = GEN_FUNC_(addEmpty)(map, bucket);
+        item = GEN_NAME_(addEmpty)(map, bucket);
         item->key = key;
     }
     return item;
@@ -170,12 +170,12 @@ inline GEN_STRUCT(item)* GEN_FUNC(refOrEmpty)(GEN_COL* map, GEN_KEY key) {
  * @param value Default value
  * @return Pointer to the item (usable until next added item)
 **/
-inline GEN_STRUCT(item)* GEN_FUNC(refOrDefault)(GEN_COL* map, GEN_KEY key, GEN_TYPE value) {
-    if (map->length >= map->mask >> 1) GEN_FUNC_(grow)(map);
+inline GEN_NAME(item)* GEN_NAME(refOrDefault)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value) {
+    if (map->length >= map->mask >> 1) GEN_NAME_(grow)(map);
     GEN_SIZE bucket = MAP_INDEX(MAP_HASH(key), map->mask);
-    GEN_STRUCT(item)* item = GEN_FUNC_(search)(map, map->buckets[bucket], key);
+    GEN_NAME(item)* item = GEN_NAME_(search)(map, map->buckets[bucket], key);
     if (item == NULL) {
-        item = GEN_FUNC_(addEmpty)(map, bucket);
+        item = GEN_NAME_(addEmpty)(map, bucket);
         item->key = key;
         item->value = value;
     }
@@ -189,8 +189,8 @@ inline GEN_STRUCT(item)* GEN_FUNC(refOrDefault)(GEN_COL* map, GEN_KEY key, GEN_T
  * @param key The key
  * @return true if the key was found, false otherwise
 **/
-inline bool GEN_FUNC(contains)(GEN_COL* map, GEN_KEY key) {
-    return GEN_FUNC(ref)(map, key) != NULL;
+inline bool GEN_NAME(contains)(GEN_ALGO* map, GEN_KEY key) {
+    return GEN_NAME(ref)(map, key) != NULL;
 }
 
 
@@ -200,8 +200,8 @@ inline bool GEN_FUNC(contains)(GEN_COL* map, GEN_KEY key) {
  * @param key The key
  * @return The value
 **/
-inline GEN_TYPE GEN_FUNC(get)(GEN_COL* map, GEN_KEY key) {
-    return GEN_FUNC(ref)(map, key)->value;
+inline GEN_TYPE GEN_NAME(get)(GEN_ALGO* map, GEN_KEY key) {
+    return GEN_NAME(ref)(map, key)->value;
 }
 
 
@@ -212,8 +212,8 @@ inline GEN_TYPE GEN_FUNC(get)(GEN_COL* map, GEN_KEY key) {
  * @param value Default value
  * @return The value
 **/
-inline GEN_TYPE GEN_FUNC(getOrDefault)(GEN_COL* map, GEN_KEY key, GEN_TYPE value) {
-    GEN_STRUCT(item)* item = GEN_FUNC(ref)(map, key);
+inline GEN_TYPE GEN_NAME(getOrDefault)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value) {
+    GEN_NAME(item)* item = GEN_NAME(ref)(map, key);
     return item == NULL ? value : item->value;
 }
 
@@ -224,8 +224,8 @@ inline GEN_TYPE GEN_FUNC(getOrDefault)(GEN_COL* map, GEN_KEY key, GEN_TYPE value
  * @param key The key
  * @param value New value
 **/
-inline void GEN_FUNC(set)(GEN_COL* map, GEN_KEY key, GEN_TYPE value) {
-    GEN_FUNC(ref)(map, key)->value = value;
+inline void GEN_NAME(set)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value) {
+    GEN_NAME(ref)(map, key)->value = value;
 }
 
 
@@ -235,10 +235,10 @@ inline void GEN_FUNC(set)(GEN_COL* map, GEN_KEY key, GEN_TYPE value) {
  * @param key Key of the item
  * @param value Value of the item
 **/
-inline void GEN_FUNC(add)(GEN_COL* map, GEN_KEY key, GEN_TYPE value) {
-    if (map->length >= map->mask >> 1) GEN_FUNC_(grow)(map);
+inline void GEN_NAME(add)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value) {
+    if (map->length >= map->mask >> 1) GEN_NAME_(grow)(map);
     GEN_SIZE bucket = MAP_INDEX(MAP_HASH(key), map->mask);
-    GEN_STRUCT(item)* item = GEN_FUNC_(addEmpty)(map, bucket);
+    GEN_NAME(item)* item = GEN_NAME_(addEmpty)(map, bucket);
     item->key = key;
     item->value = value;
 }
@@ -250,8 +250,8 @@ inline void GEN_FUNC(add)(GEN_COL* map, GEN_KEY key, GEN_TYPE value) {
  * @param key The key
  * @param value New value
 **/
-inline void GEN_FUNC(setOrAdd)(GEN_COL* map, GEN_KEY key, GEN_TYPE value) {
-    GEN_FUNC(refOrEmpty)(map, key)->value = value;
+inline void GEN_NAME(setOrAdd)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value) {
+    GEN_NAME(refOrEmpty)(map, key)->value = value;
 }
 
 
@@ -261,8 +261,8 @@ inline void GEN_FUNC(setOrAdd)(GEN_COL* map, GEN_KEY key, GEN_TYPE value) {
  * @param key Key of the item
  * @param value Value of the item
 **/
-inline void GEN_FUNC(tryAdd)(GEN_COL* map, GEN_KEY key, GEN_TYPE value) {
-    GEN_FUNC(refOrDefault)(map, key, value);
+inline void GEN_NAME(tryAdd)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value) {
+    GEN_NAME(refOrDefault)(map, key, value);
 }
 
 
@@ -271,15 +271,15 @@ inline void GEN_FUNC(tryAdd)(GEN_COL* map, GEN_KEY key, GEN_TYPE value) {
  * @param map The map
  * @param key Key of the item
 **/
-void GEN_FUNC(remove)(GEN_COL* map, GEN_KEY key);
+void GEN_NAME(remove)(GEN_ALGO* map, GEN_KEY key);
 
 
 /**
  * @brief Start iterating on a map
  * @return The iterator
 **/
-inline GEN_STRUCT(iter) GEN_FUNC(iter)(void) {
-    return (GEN_STRUCT(iter)) { .bucket = -1, .index = -1 };
+inline GEN_NAME(iter) GEN_NAME(iterStart)(void) {
+    return (GEN_NAME(iter)) { .bucket = -1, .index = -1 };
 }
 
 
@@ -289,13 +289,13 @@ inline GEN_STRUCT(iter) GEN_FUNC(iter)(void) {
  * @param iter The iterator
  * @return Pointer to the item, NULL if no more items
 **/
-inline GEN_STRUCT(item)* GEN_FUNC(next)(GEN_COL* map, GEN_STRUCT(iter)* iter) {
+inline GEN_NAME(item)* GEN_NAME(iterNext)(GEN_ALGO* map, GEN_NAME(iter)* iter) {
     while (iter->index == -1) {
         iter->bucket++;
         if (iter->bucket > map->mask) return NULL;
         iter->index = map->buckets[iter->bucket];
     }
-    GEN_STRUCT(item)* item = &map->items[iter->index].item;
+    GEN_NAME(item)* item = &map->items[iter->index].item;
     iter->index = item->next;
     return item;
 }
@@ -304,38 +304,38 @@ inline GEN_STRUCT(item)* GEN_FUNC(next)(GEN_COL* map, GEN_STRUCT(iter)* iter) {
 #ifdef GEN_SOURCE
 
 
-void GEN_FUNC(init)(GEN_COL* map, GEN_SIZE capacity);
-GEN_COL GEN_FUNC(new)(GEN_SIZE capacity);
-void GEN_FUNC(free)(GEN_COL* map);
-GEN_STRUCT(item)* GEN_FUNC(ref)(GEN_COL* map, GEN_KEY key);
-GEN_STRUCT(item)* GEN_FUNC(refOrEmpty)(GEN_COL* map, GEN_KEY key);
-GEN_STRUCT(item)* GEN_FUNC(refOrDefault)(GEN_COL* map, GEN_KEY key, GEN_TYPE value);
-bool GEN_FUNC(contains)(GEN_COL* map, GEN_KEY key);
-GEN_TYPE GEN_FUNC(get)(GEN_COL* map, GEN_KEY key);
-GEN_TYPE GEN_FUNC(getOrDefault)(GEN_COL* map, GEN_KEY key, GEN_TYPE value);
-void GEN_FUNC(set)(GEN_COL* map, GEN_KEY key, GEN_TYPE value);
-void GEN_FUNC(add)(GEN_COL* map, GEN_KEY key, GEN_TYPE value);
-void GEN_FUNC(setOrAdd)(GEN_COL* map, GEN_KEY key, GEN_TYPE value);
-void GEN_FUNC(tryAdd)(GEN_COL* map, GEN_KEY key, GEN_TYPE value);
-GEN_STRUCT(iter) GEN_FUNC(iter)();
-GEN_STRUCT(item)* GEN_FUNC(next)(GEN_COL* map, GEN_STRUCT(iter)* iter);
+void GEN_NAME(init)(GEN_ALGO* map, GEN_SIZE capacity);
+GEN_ALGO GEN_NAME(new)(GEN_SIZE capacity);
+void GEN_NAME(free)(GEN_ALGO* map);
+GEN_NAME(item)* GEN_NAME(ref)(GEN_ALGO* map, GEN_KEY key);
+GEN_NAME(item)* GEN_NAME(refOrEmpty)(GEN_ALGO* map, GEN_KEY key);
+GEN_NAME(item)* GEN_NAME(refOrDefault)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value);
+bool GEN_NAME(contains)(GEN_ALGO* map, GEN_KEY key);
+GEN_TYPE GEN_NAME(get)(GEN_ALGO* map, GEN_KEY key);
+GEN_TYPE GEN_NAME(getOrDefault)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value);
+void GEN_NAME(set)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value);
+void GEN_NAME(add)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value);
+void GEN_NAME(setOrAdd)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value);
+void GEN_NAME(tryAdd)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value);
+GEN_NAME(iter) GEN_NAME(iterStart)();
+GEN_NAME(item)* GEN_NAME(iterNext)(GEN_ALGO* map, GEN_NAME(iter)* iter);
 
 
-void GEN_FUNC_(grow)(GEN_COL* map) {
+void GEN_NAME_(grow)(GEN_ALGO* map) {
     GEN_SIZE oldCapacity = map->mask + 1;
     GEN_SIZE capacity = oldCapacity << 1;
     map->mask = capacity - 1;
-    map->items = THROW_PN(realloc(map->items, sizeof(GEN_STRUCT(reusable)) * oldCapacity), map->items);
+    map->items = THROW_PN(realloc(map->items, sizeof(GEN_NAME(reusable)) * oldCapacity), map->items);
     GEN_SIZE* newBuckets = THROW_PN(malloc(sizeof(GEN_SIZE) * capacity), newBuckets);
     memset(newBuckets, -1, sizeof(GEN_SIZE) * capacity);
     for (GEN_SIZE i = 0; i < oldCapacity; i++) { // Rebuild linked lists in newBuckets
         GEN_SIZE index = map->buckets[i];
         while (index != -1) {
-            GEN_STRUCT(item)* item = &map->items[index].item;
+            GEN_NAME(item)* item = &map->items[index].item;
             GEN_SIZE newBucket = MAP_INDEX(MAP_HASH(item->key), map->mask);
             if (newBuckets[newBucket] == -1) newBuckets[newBucket] = index;
             else { // Add at the end
-                GEN_STRUCT(item)* prevItem = &map->items[newBuckets[newBucket]].item;
+                GEN_NAME(item)* prevItem = &map->items[newBuckets[newBucket]].item;
                 while (prevItem->next != -1) prevItem = &map->items[prevItem->next].item;
                 prevItem->next = index;
             }
@@ -348,7 +348,7 @@ void GEN_FUNC_(grow)(GEN_COL* map) {
 }
 
 
-GEN_STRUCT(item)* GEN_FUNC_(addEmpty)(GEN_COL* map, GEN_SIZE bucket) {
+GEN_NAME(item)* GEN_NAME_(addEmpty)(GEN_ALGO* map, GEN_SIZE bucket) {
     GEN_SIZE i;
     if (map->reusable != -1) {
         i = map->reusable;
@@ -356,16 +356,16 @@ GEN_STRUCT(item)* GEN_FUNC_(addEmpty)(GEN_COL* map, GEN_SIZE bucket) {
     }
     else i = map->length;
     map->length++;
-    GEN_STRUCT(item)* item = &map->items[i].item;
+    GEN_NAME(item)* item = &map->items[i].item;
     item->next = map->buckets[bucket];
     map->buckets[bucket] = i;
     return item;
 }
 
 
-GEN_STRUCT(item)* GEN_FUNC_(search)(GEN_COL* map, GEN_SIZE index, GEN_KEY key) {
+GEN_NAME(item)* GEN_NAME_(search)(GEN_ALGO* map, GEN_SIZE index, GEN_KEY key) {
     while (index != -1) { // Search in linked list
-        GEN_STRUCT(item)* item = &map->items[index].item;
+        GEN_NAME(item)* item = &map->items[index].item;
         if (GEN_EQUALS(key, item->key)) return item;
         index = item->next;
     }
@@ -373,11 +373,11 @@ GEN_STRUCT(item)* GEN_FUNC_(search)(GEN_COL* map, GEN_SIZE index, GEN_KEY key) {
 }
 
 
-void GEN_FUNC(remove)(GEN_COL* map, GEN_KEY key) {
+void GEN_NAME(remove)(GEN_ALGO* map, GEN_KEY key) {
     GEN_SIZE bucket = MAP_INDEX(MAP_HASH(key), map->mask);
     GEN_SIZE* index = map->buckets + bucket;
     while (*index != -1) {
-        GEN_STRUCT(reusable)* reusable = map->items + *index;
+        GEN_NAME(reusable)* reusable = map->items + *index;
         if (GEN_EQUALS(key, reusable->item.key)) {
             GEN_SIZE next = reusable->item.next;
             reusable->reusable = map->reusable;

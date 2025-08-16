@@ -8,33 +8,33 @@
 
 #define N 10000
 
-static void tree_test() {
+static void treeest() {
     srand(314);
     int keys[N];
-    tree_t tree = tree_new(2);
+    tree test = tree_new(2);
     for (int i = 0; i < N; i++) {
         keys[i] = rand();
-        if (tree_contains(&tree, keys[i]) || tree_ref(&tree, keys[i]) != NULL) THROW_ERR("Key already in tree");
-        tree_setOrAdd(&tree, keys[i], i);
+        if (tree_contains(&test, keys[i]) || tree_ref(&test, keys[i]) != NULL) THROW_ERR("Key already in tree");
+        tree_setOrAdd(&test, keys[i], i);
         keys[++i] = rand();
-        tree_tryAdd(&tree, keys[i], i);
+        tree_tryAdd(&test, keys[i], i);
         keys[++i] = rand();
-        tree_item_t* ref = tree_refOrEmpty(&tree, keys[i]);
+        tree_item* ref = tree_refOrEmpty(&test, keys[i]);
         if (ref->key != keys[i]) THROW_ERR("Incorrect ref");
         ref->value = i;
         keys[++i] = rand();
-        ref = tree_refOrDefault(&tree, keys[i], i);
+        ref = tree_refOrDefault(&test, keys[i], i);
         if (ref->key != keys[i] || ref->value != i) THROW_ERR("Incorrect ref");
     }
-    if (tree.length != N) THROW_ERR("Incorrect length");
+    if (test.length != N) THROW_ERR("Incorrect length");
 
     int sortedKeys[N];
     memcpy(sortedKeys, keys, sizeof(int) * N);
     sort(sortedKeys, N);
-    tree_iter_t iter = tree_iter();
-    tree_item_t* item;
+    tree_iter iter = tree_iterAll();
+    tree_item* item;
     int i = 0;
-    while ((item = tree_next(&tree, &iter))) {
+    while ((item = tree_nextAll(&test, &iter))) {
         if (item->key != sortedKeys[i++]) THROW_ERR("Incorrect key");
     }
     if (i != N) THROW_ERR("Missing keys");
@@ -43,31 +43,31 @@ static void tree_test() {
         int start = rand(), end = rand();
         int startIndex = search(sortedKeys, start, N);
         int endIndex = search(sortedKeys, end, N);
-        tree_iter_t iter = tree_iterAfter(&tree, start);
-        tree_item_t* item;
+        tree_iter iter = tree_iterAfter(&test, start);
+        tree_item* item;
         int j = 0;
-        while ((item = tree_nextAfter(&tree, start, &iter))) {
+        while ((item = tree_nextAfter(&test, start, &iter))) {
             if (item->key != sortedKeys[startIndex + j++]) THROW_ERR("Incorrect key");
         }
         if (j != N - startIndex) THROW_ERR("Missing keys");
-        if (j != tree_countAfter(&tree, start)) THROW_ERR("Incorrect count");
-        iter = tree_iterBefore(&tree, end);
+        if (j != tree_countAfter(&test, start)) THROW_ERR("Incorrect count");
+        iter = tree_iterBefore(&test, end);
         j = 0;
-        while ((item = tree_nextBefore(&tree, end, &iter))) {
+        while ((item = tree_nextBefore(&test, end, &iter))) {
             if (item->key != sortedKeys[j++]) THROW_ERR("Incorrect key");
         }
         if (j != endIndex) THROW_ERR("Missing keys");
-        if (j != tree_countBefore(&tree, end)) THROW_ERR("Incorrect count");
+        if (j != tree_countBefore(&test, end)) THROW_ERR("Incorrect count");
         if (endIndex >= startIndex) {
-            iter = tree_iterBetween(&tree, start, end);
+            iter = tree_iterBetween(&test, start, end);
             j = 0;
-            while ((item = tree_nextBetween(&tree, start, end, &iter))) {
+            while ((item = tree_nextBetween(&test, start, end, &iter))) {
                 if (item->key != sortedKeys[startIndex + j++]) THROW_ERR("Incorrect key");
             }
             if (j != endIndex - startIndex) THROW_ERR("Missing keys");
-            if (j != tree_countBetween(&tree, start, end)) THROW_ERR("Incorrect count");
+            if (j != tree_countBetween(&test, start, end)) THROW_ERR("Incorrect count");
         }
-        item = tree_floor(&tree, start);
+        item = tree_floor(&test, start);
         if (item == NULL) {
             if (startIndex > 0 || sortedKeys[0] == start) THROW_ERR("Floor not found");
         }
@@ -79,7 +79,7 @@ static void tree_test() {
                 if (startIndex == 0 || item->key != sortedKeys[startIndex - 1]) THROW_ERR("Incorrect floor");
             }
         }
-        item = tree_ceil(&tree, start);
+        item = tree_ceil(&test, start);
         if (item == NULL) {
             if (startIndex < N) THROW_ERR("Ceil not found");
         }
@@ -89,21 +89,21 @@ static void tree_test() {
     }
 
     for (int i = 0; i < N; i++) {
-        if (!tree_contains(&tree, keys[i])) THROW_ERR("Key not found");
-        if (tree_get(&tree, keys[i]) != i) THROW_ERR("Incorrect value");
-        if (tree_getOrDefault(&tree, keys[i], 314) != i) THROW_ERR("Incorrect value");
-        tree_item_t* ref = tree_ref(&tree, keys[i]);
+        if (!tree_contains(&test, keys[i])) THROW_ERR("Key not found");
+        if (tree_get(&test, keys[i]) != i) THROW_ERR("Incorrect value");
+        if (tree_getOrDefault(&test, keys[i], 314) != i) THROW_ERR("Incorrect value");
+        tree_item* ref = tree_ref(&test, keys[i]);
         if (ref->key != keys[i] || ref->value != i) THROW_ERR("Incorrect ref");
-        ref = tree_refOrEmpty(&tree, keys[i]);
+        ref = tree_refOrEmpty(&test, keys[i]);
         if (ref->key != keys[i] || ref->value != i) THROW_ERR("Incorrect ref");
-        ref = tree_refOrDefault(&tree, keys[i], 314);
+        ref = tree_refOrDefault(&test, keys[i], 314);
         if (ref->key != keys[i] || ref->value != i) THROW_ERR("Incorrect ref");
-        tree_remove(&tree, keys[i]);
-        tree_remove(&tree, keys[i]);
+        tree_remove(&test, keys[i]);
+        tree_remove(&test, keys[i]);
     }
-    if (tree.length != 0) THROW_ERR("Incorrect length");
+    if (test.length != 0) THROW_ERR("Incorrect length");
 
-    tree_free(&tree);
+    tree_free(&test);
 }
 
 static void tree_benchmark() {
@@ -111,17 +111,17 @@ static void tree_benchmark() {
     int keys[N];
     for (int i = 0; i < N; i++) keys[i] = rand();
     for (int i = 0; i < 2000; i++) {
-        tree_t tree = tree_new(1);
+        tree test = tree_new(1);
         for (int j = 0; j < N; j++) {
-            tree_tryAdd(&tree, keys[j], j);
+            tree_tryAdd(&test, keys[j], j);
         }
         for (int j = 0; j < N; j++) {
-            tree_get(&tree, keys[j]);
+            tree_get(&test, keys[j]);
         }
         for (int j = 0; j < N; j++) {
-            tree_remove(&tree, keys[j]);
+            tree_remove(&test, keys[j]);
         }
-        tree_free(&tree);
+        tree_free(&test);
     }
 }
 
@@ -129,5 +129,5 @@ int main() {
     TIME("Tree benchmark",
         tree_benchmark();
     )
-    tree_test();
+    treeest();
 }

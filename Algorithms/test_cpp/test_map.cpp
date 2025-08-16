@@ -12,15 +12,15 @@ static void map_benchmark() {
     int keys[N];
     for (int i = 0; i < N; i++) keys[i] = rand();
     for (int i = 0; i < 4000; i++) {
-        unordered_map<int, int> map;
+        unordered_map<int, int> test;
         for (int j = 0; j < N; j++) {
-            map[keys[j]] = j;
+            test[keys[j]] = j;
         }
         for (int j = 0; j < N; j++) {
-            map[keys[j]];
+            test[keys[j]];
         }
         for (int j = 0; j < N; j++) {
-            map.erase(keys[j]);
+            test.erase(keys[j]);
         }
     }
 }

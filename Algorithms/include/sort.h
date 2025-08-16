@@ -48,7 +48,7 @@ static inline int64_t doubleToInt(double d) { return *(int64_t*)&d; }
  * @param items The items
  * @param n Number of items
 **/
-void GEN_FUNC_(findFirst)(GEN_TYPE* items, GEN_SIZE n);
+void GEN_NAME_(findFirst)(GEN_TYPE* items, GEN_SIZE n);
 
 
 /**
@@ -56,7 +56,7 @@ void GEN_FUNC_(findFirst)(GEN_TYPE* items, GEN_SIZE n);
  * @param items The items
  * @param n Number of items
 **/
-void GEN_FUNC_(unguardedInsertion)(GEN_TYPE* items, GEN_SIZE n);
+void GEN_NAME_(unguardedInsertion)(GEN_TYPE* items, GEN_SIZE n);
 
 
 /**
@@ -64,9 +64,9 @@ void GEN_FUNC_(unguardedInsertion)(GEN_TYPE* items, GEN_SIZE n);
  * @param items The items
  * @param n Number of items
 **/
-inline void GEN_FUNC(insertion)(GEN_TYPE* items, GEN_SIZE n) {
-    GEN_FUNC_(findFirst)(items, n);
-    GEN_FUNC_(unguardedInsertion)(items, n);
+inline void GEN_NAME(insertion)(GEN_TYPE* items, GEN_SIZE n) {
+    GEN_NAME_(findFirst)(items, n);
+    GEN_NAME_(unguardedInsertion)(items, n);
 }
 
 
@@ -77,7 +77,7 @@ inline void GEN_FUNC(insertion)(GEN_TYPE* items, GEN_SIZE n) {
  * @param items The items
  * @param n Number of items
 **/
-void GEN_FUNC(radix)(GEN_TYPE* items, GEN_SIZE n);
+void GEN_NAME(radix)(GEN_TYPE* items, GEN_SIZE n);
 
 #endif
 
@@ -88,7 +88,7 @@ void GEN_FUNC(radix)(GEN_TYPE* items, GEN_SIZE n);
  * @param start Start index (inclusive)
  * @param end End index (exclusive)
 **/
-void GEN_FUNC_(quickRecur)(GEN_TYPE* items, GEN_SIZE start, GEN_SIZE end);
+void GEN_NAME_(quickRecur)(GEN_TYPE* items, GEN_SIZE start, GEN_SIZE end);
 
 
 /**
@@ -96,13 +96,13 @@ void GEN_FUNC_(quickRecur)(GEN_TYPE* items, GEN_SIZE start, GEN_SIZE end);
  * @param items The items
  * @param n Number of items
 **/
-inline void GEN_FUNC(quick)(GEN_TYPE* items, GEN_SIZE n) {
+inline void GEN_NAME(quick)(GEN_TYPE* items, GEN_SIZE n) {
     if (n > SORT_QUICK_THRESH) {
-        GEN_FUNC_(quickRecur)(items, 0, n);
-        GEN_FUNC_(findFirst)(items, SORT_QUICK_THRESH);
+        GEN_NAME_(quickRecur)(items, 0, n);
+        GEN_NAME_(findFirst)(items, SORT_QUICK_THRESH);
     }
-    else GEN_FUNC_(findFirst)(items, n);
-    GEN_FUNC_(unguardedInsertion)(items, n);
+    else GEN_NAME_(findFirst)(items, n);
+    GEN_NAME_(unguardedInsertion)(items, n);
 }
 
 
@@ -113,10 +113,10 @@ inline void GEN_FUNC(quick)(GEN_TYPE* items, GEN_SIZE n) {
 **/
 inline void GEN_ALGO(GEN_TYPE* items, GEN_SIZE n) {
 #ifdef SORT_COMPARABLE
-    GEN_FUNC(quick)(items, n);
+    GEN_NAME(quick)(items, n);
 #else
-    if (n < SORT_RADIX_THRESH) GEN_FUNC(quick)(items, n);
-    else GEN_FUNC(radix)(items, n);
+    if (n < SORT_RADIX_THRESH) GEN_NAME(quick)(items, n);
+    else GEN_NAME(radix)(items, n);
 #endif
 }
 
@@ -124,12 +124,12 @@ inline void GEN_ALGO(GEN_TYPE* items, GEN_SIZE n) {
 #ifdef GEN_SOURCE
 
 
-void GEN_FUNC(quick)(GEN_TYPE* items, GEN_SIZE n);
-void GEN_FUNC(insertion)(GEN_TYPE* items, GEN_SIZE n);
+void GEN_NAME(quick)(GEN_TYPE* items, GEN_SIZE n);
+void GEN_NAME(insertion)(GEN_TYPE* items, GEN_SIZE n);
 void GEN_ALGO(GEN_TYPE* items, GEN_SIZE n);
 
 
-void GEN_FUNC_(findFirst)(GEN_TYPE* items, GEN_SIZE n) {
+void GEN_NAME_(findFirst)(GEN_TYPE* items, GEN_SIZE n) {
     GEN_SIZE minIndex = 0;
     GEN_TYPE minItem = items[0];
     for (GEN_SIZE i = 1; i < n; i++) {
@@ -143,7 +143,7 @@ void GEN_FUNC_(findFirst)(GEN_TYPE* items, GEN_SIZE n) {
 }
 
 
-void GEN_FUNC_(unguardedInsertion)(GEN_TYPE* items, GEN_SIZE n) {
+void GEN_NAME_(unguardedInsertion)(GEN_TYPE* items, GEN_SIZE n) {
     for (GEN_SIZE i = 2; i < n; i++) {
         GEN_TYPE item = items[i];
         GEN_SIZE j = i - 1;
@@ -156,7 +156,7 @@ void GEN_FUNC_(unguardedInsertion)(GEN_TYPE* items, GEN_SIZE n) {
 }
 
 
-void GEN_FUNC_(quickRecur)(GEN_TYPE* items, GEN_SIZE start, GEN_SIZE end) {
+void GEN_NAME_(quickRecur)(GEN_TYPE* items, GEN_SIZE start, GEN_SIZE end) {
     // Use median of 3 items as pivot
     GEN_SIZE mid = start + ((end - start) >> 1);
     GEN_TYPE item = items[mid];
@@ -197,14 +197,14 @@ void GEN_FUNC_(quickRecur)(GEN_TYPE* items, GEN_SIZE start, GEN_SIZE end) {
     items[i] = pivot;
 
     // Recursion
-    if (i - start > SORT_QUICK_THRESH) GEN_FUNC_(quickRecur)(items, start, i);
-    if (end - i - 1 > SORT_QUICK_THRESH) GEN_FUNC_(quickRecur)(items, i + 1, end);
+    if (i - start > SORT_QUICK_THRESH) GEN_NAME_(quickRecur)(items, start, i);
+    if (end - i - 1 > SORT_QUICK_THRESH) GEN_NAME_(quickRecur)(items, i + 1, end);
 }
 
 
 #ifndef SORT_COMPARABLE
 
-void GEN_FUNC(radix)(GEN_TYPE* items, GEN_SIZE n) {
+void GEN_NAME(radix)(GEN_TYPE* items, GEN_SIZE n) {
     GEN_TYPE* items2 = THROW_PN(malloc(sizeof(GEN_TYPE) * n), items2);
     for (int i = 0; i < sizeof(GEN_KEY); i++) {
         GEN_SIZE count[257] = {};

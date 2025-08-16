@@ -10,23 +10,23 @@ using namespace std;
 static void queue_benchmark() {
     srand(314);
     for (int i = 0; i < 50; i++) {
-        deque<int> queue;
+        deque<int> test;
         for (int j = 0; j < 50; j++) {
             int r = rand();
             size_t s = (double)MAX_LENGTH * r / RAND_MAX;
-            while (queue.size() < s) queue.push_front(r + queue.size());
-            while (queue.size() > s) queue.pop_front();
+            while (test.size() < s) test.push_front(r + test.size());
+            while (test.size() > s) test.pop_front();
             for (size_t k = 0; k < s; k++) {
-                queue.push_front(r + k);
-                queue.pop_back();
+                test.push_front(r + k);
+                test.pop_back();
             }
             r = rand();
             s = (double)MAX_LENGTH * r / RAND_MAX;
-            while (queue.size() < s) queue.push_back(r + queue.size());
-            while (queue.size() > s) queue.pop_back();
+            while (test.size() < s) test.push_back(r + test.size());
+            while (test.size() > s) test.pop_back();
             for (size_t k = 0; k < s; k++) {
-                queue.push_back(r + k);
-                queue.pop_front();
+                test.push_back(r + k);
+                test.pop_front();
             }
         }
     }
@@ -36,31 +36,31 @@ static void queue_test() {
     long h = 0;
     srand(314);
     for (int i = 0; i < 50; i++) {
-        deque<int> queue;
+        deque<int> test;
         for (int j = 0; j < 50; j++) {
             int r = rand();
             size_t s = (double)MAX_LENGTH * r / RAND_MAX;
-            while (queue.size() < s) queue.push_front(r + queue.size());
-            while (queue.size() > s) {
-                h = h * 31 + queue[0];
-                queue.pop_front();
+            while (test.size() < s) test.push_front(r + test.size());
+            while (test.size() > s) {
+                h = h * 31 + test[0];
+                test.pop_front();
             }
             for (size_t k = 0; k < s; k++) {
-                queue.push_front(r + k);
-                h = h * 31 + queue[queue.size() - 1];
-                queue.pop_back();
+                test.push_front(r + k);
+                h = h * 31 + test[test.size() - 1];
+                test.pop_back();
             }
             r = rand();
             s = (double)MAX_LENGTH * r / RAND_MAX;
-            while (queue.size() < s) queue.push_back(r + queue.size());
-            while (queue.size() > s) {
-                h = h * 31 + queue[queue.size() - 1];
-                queue.pop_back();
+            while (test.size() < s) test.push_back(r + test.size());
+            while (test.size() > s) {
+                h = h * 31 + test[test.size() - 1];
+                test.pop_back();
             }
             for (size_t k = 0; k < s; k++) {
-                queue.push_back(r + k);
-                h = h * 31 + queue[0];
-                queue.pop_front();
+                test.push_back(r + k);
+                h = h * 31 + test[0];
+                test.pop_front();
             }
         }
     }

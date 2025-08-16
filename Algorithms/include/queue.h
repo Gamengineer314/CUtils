@@ -17,7 +17,7 @@ typedef struct {
     GEN_SIZE length;
     GEN_SIZE first;
     GEN_SIZE mask;
-} GEN_COL;
+} GEN_ALGO;
 
 
 /**
@@ -25,7 +25,7 @@ typedef struct {
  * @param queue The queue
  * @param capacity Initial capacity (must be a power of 2)
 **/
-inline void GEN_FUNC(init)(GEN_COL* queue, GEN_SIZE capacity) {
+inline void GEN_NAME(init)(GEN_ALGO* queue, GEN_SIZE capacity) {
     queue->values = THROW_PN(malloc(sizeof(GEN_TYPE) * capacity), queue->values);
     queue->length = 0;
     queue->first = 0;
@@ -38,9 +38,9 @@ inline void GEN_FUNC(init)(GEN_COL* queue, GEN_SIZE capacity) {
  * @param capacity Initial capacity (must be a power of 2)
  * @return The queue
 **/
-inline GEN_COL GEN_FUNC(new)(GEN_SIZE capacity) {
-    GEN_COL queue;
-    GEN_FUNC(init)(&queue, capacity);
+inline GEN_ALGO GEN_NAME(new)(GEN_SIZE capacity) {
+    GEN_ALGO queue;
+    GEN_NAME(init)(&queue, capacity);
     return queue;
 }
 
@@ -49,7 +49,7 @@ inline GEN_COL GEN_FUNC(new)(GEN_SIZE capacity) {
  * @brief Free a queue
  * @param list The queue
 **/
-inline void GEN_FUNC(free)(GEN_COL* queue) {
+inline void GEN_NAME(free)(GEN_ALGO* queue) {
     free(queue->values);
 }
 
@@ -58,7 +58,7 @@ inline void GEN_FUNC(free)(GEN_COL* queue) {
  * @brief Grow a queue
  * @param queue The queue
 **/
-void GEN_FUNC_(grow)(GEN_COL* queue);
+void GEN_NAME_(grow)(GEN_ALGO* queue);
 
 
 /**
@@ -67,7 +67,7 @@ void GEN_FUNC_(grow)(GEN_COL* queue);
  * @param index Index of the value
  * @return Pointer to the value
 **/
-inline GEN_TYPE* GEN_FUNC(ref)(GEN_COL* queue, GEN_SIZE index) {
+inline GEN_TYPE* GEN_NAME(ref)(GEN_ALGO* queue, GEN_SIZE index) {
     return queue->values + ((queue->first + index) & queue->mask);
 }
 
@@ -78,8 +78,8 @@ inline GEN_TYPE* GEN_FUNC(ref)(GEN_COL* queue, GEN_SIZE index) {
  * @param index Index of the value
  * @return The value
 **/
-inline GEN_TYPE GEN_FUNC(get)(GEN_COL* queue, GEN_SIZE index) {
-    return *GEN_FUNC(ref)(queue, index);
+inline GEN_TYPE GEN_NAME(get)(GEN_ALGO* queue, GEN_SIZE index) {
+    return *GEN_NAME(ref)(queue, index);
 }
 
 
@@ -89,8 +89,8 @@ inline GEN_TYPE GEN_FUNC(get)(GEN_COL* queue, GEN_SIZE index) {
  * @param index Index of the value
  * @return The value
 **/
-inline void GEN_FUNC(set)(GEN_COL* queue, GEN_SIZE index, GEN_TYPE value) {
-    *GEN_FUNC(ref)(queue, index) = value;
+inline void GEN_NAME(set)(GEN_ALGO* queue, GEN_SIZE index, GEN_TYPE value) {
+    *GEN_NAME(ref)(queue, index) = value;
 }
 
 
@@ -99,8 +99,8 @@ inline void GEN_FUNC(set)(GEN_COL* queue, GEN_SIZE index, GEN_TYPE value) {
  * @param list The queue
  * @param value The value
 **/
-inline void GEN_FUNC(addLast)(GEN_COL* queue, GEN_TYPE value) {
-    if (queue->length > queue->mask) GEN_FUNC_(grow)(queue);
+inline void GEN_NAME(addLast)(GEN_ALGO* queue, GEN_TYPE value) {
+    if (queue->length > queue->mask) GEN_NAME_(grow)(queue);
     queue->values[(queue->first + queue->length++) & queue->mask] = value;
 }
 
@@ -110,8 +110,8 @@ inline void GEN_FUNC(addLast)(GEN_COL* queue, GEN_TYPE value) {
  * @param list The queue
  * @param value The value
 **/
-inline void GEN_FUNC(addFirst)(GEN_COL* queue, GEN_TYPE value) {
-    if (queue->length > queue->mask) GEN_FUNC_(grow)(queue);
+inline void GEN_NAME(addFirst)(GEN_ALGO* queue, GEN_TYPE value) {
+    if (queue->length > queue->mask) GEN_NAME_(grow)(queue);
     queue->first = (queue->first - 1) & queue->mask;
     queue->length++;
     queue->values[queue->first] = value;
@@ -123,7 +123,7 @@ inline void GEN_FUNC(addFirst)(GEN_COL* queue, GEN_TYPE value) {
  * @param queue The queue
  * @return The value
 **/
-inline GEN_TYPE GEN_FUNC(popFirst)(GEN_COL* queue) {
+inline GEN_TYPE GEN_NAME(popFirst)(GEN_ALGO* queue) {
     GEN_TYPE value = queue->values[queue->first];
     queue->first = (queue->first + 1) & queue->mask;
     queue->length--;
@@ -136,7 +136,7 @@ inline GEN_TYPE GEN_FUNC(popFirst)(GEN_COL* queue) {
  * @param queue The queue
  * @return The value
 **/
-inline GEN_TYPE GEN_FUNC(popLast)(GEN_COL* queue) {
+inline GEN_TYPE GEN_NAME(popLast)(GEN_ALGO* queue) {
     return queue->values[(queue->first + --queue->length) & queue->mask];
 }
 
@@ -144,19 +144,19 @@ inline GEN_TYPE GEN_FUNC(popLast)(GEN_COL* queue) {
 #ifdef GEN_SOURCE
 
 
-void GEN_FUNC(init)(GEN_COL* queue, GEN_SIZE capacity);
-GEN_COL GEN_FUNC(new)(GEN_SIZE capacity);
-void GEN_FUNC(free)(GEN_COL* queue);
-GEN_TYPE* GEN_FUNC(ref)(GEN_COL* queue, GEN_SIZE index);
-GEN_TYPE GEN_FUNC(get)(GEN_COL* queue, GEN_SIZE index);
-void GEN_FUNC(set)(GEN_COL* queue, GEN_SIZE index, GEN_TYPE value);
-void GEN_FUNC(addLast)(GEN_COL* queue, GEN_TYPE value);
-void GEN_FUNC(addFirst)(GEN_COL* queue, GEN_TYPE value);
-GEN_TYPE GEN_FUNC(popFirst)(GEN_COL* queue);
-GEN_TYPE GEN_FUNC(popLast)(GEN_COL* queue);
+void GEN_NAME(init)(GEN_ALGO* queue, GEN_SIZE capacity);
+GEN_ALGO GEN_NAME(new)(GEN_SIZE capacity);
+void GEN_NAME(free)(GEN_ALGO* queue);
+GEN_TYPE* GEN_NAME(ref)(GEN_ALGO* queue, GEN_SIZE index);
+GEN_TYPE GEN_NAME(get)(GEN_ALGO* queue, GEN_SIZE index);
+void GEN_NAME(set)(GEN_ALGO* queue, GEN_SIZE index, GEN_TYPE value);
+void GEN_NAME(addLast)(GEN_ALGO* queue, GEN_TYPE value);
+void GEN_NAME(addFirst)(GEN_ALGO* queue, GEN_TYPE value);
+GEN_TYPE GEN_NAME(popFirst)(GEN_ALGO* queue);
+GEN_TYPE GEN_NAME(popLast)(GEN_ALGO* queue);
 
 
-void GEN_FUNC_(grow)(GEN_COL* queue) {
+void GEN_NAME_(grow)(GEN_ALGO* queue) {
     GEN_SIZE capacity = (queue->mask + 1) << 1;
     queue->mask = capacity - 1;
     queue->values = THROW_PN(realloc(queue->values, sizeof(GEN_TYPE) * capacity), queue->values);

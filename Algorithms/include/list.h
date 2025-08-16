@@ -14,7 +14,7 @@ typedef struct {
     GEN_TYPE* values;
     GEN_SIZE length;
     GEN_SIZE capacity; // Size of [values]
-} GEN_COL;
+} GEN_ALGO;
 
 
 /**
@@ -22,7 +22,7 @@ typedef struct {
  * @param list The list
  * @param capacity Initial capacity
 **/
-inline void GEN_FUNC(init)(GEN_COL* list, GEN_SIZE capacity) {
+inline void GEN_NAME(init)(GEN_ALGO* list, GEN_SIZE capacity) {
     list->values = THROW_PN(malloc(sizeof(GEN_TYPE) * capacity), list->values);
     list->length = 0;
     list->capacity = capacity;
@@ -34,9 +34,9 @@ inline void GEN_FUNC(init)(GEN_COL* list, GEN_SIZE capacity) {
  * @param capacity Initial capacity
  * @return The list
 **/
-inline GEN_COL GEN_FUNC(new)(GEN_SIZE capacity) {
-    GEN_COL list;
-    GEN_FUNC(init)(&list, capacity);
+inline GEN_ALGO GEN_NAME(new)(GEN_SIZE capacity) {
+    GEN_ALGO list;
+    GEN_NAME(init)(&list, capacity);
     return list;
 }
 
@@ -45,7 +45,7 @@ inline GEN_COL GEN_FUNC(new)(GEN_SIZE capacity) {
  * @brief Free a list
  * @param list The list
 **/
-inline void GEN_FUNC(free)(GEN_COL* list) {
+inline void GEN_NAME(free)(GEN_ALGO* list) {
     free(list->values);
 }
 
@@ -54,7 +54,7 @@ inline void GEN_FUNC(free)(GEN_COL* list) {
  * @brief Grow a list if it is full
  * @param list The list
 **/
-inline void GEN_FUNC_(grow)(GEN_COL* list) {
+inline void GEN_NAME_(grow)(GEN_ALGO* list) {
     if (list->length >= list->capacity) {
         list->capacity <<= 1;
         list->values = THROW_PN(realloc(list->values, sizeof(GEN_TYPE) * list->capacity), list->values);
@@ -67,8 +67,8 @@ inline void GEN_FUNC_(grow)(GEN_COL* list) {
  * @param list The list
  * @param value The value
 **/
-inline void GEN_FUNC(add)(GEN_COL* list, GEN_TYPE value) {
-    GEN_FUNC_(grow)(list);
+inline void GEN_NAME(add)(GEN_ALGO* list, GEN_TYPE value) {
+    GEN_NAME_(grow)(list);
     list->values[list->length++] = value;
 }
 
@@ -78,7 +78,7 @@ inline void GEN_FUNC(add)(GEN_COL* list, GEN_TYPE value) {
  * @param list The list
  * @return The value
 **/
-inline GEN_TYPE GEN_FUNC(pop)(GEN_COL* list) {
+inline GEN_TYPE GEN_NAME(pop)(GEN_ALGO* list) {
     return list->values[--list->length];
 }
 
@@ -86,12 +86,12 @@ inline GEN_TYPE GEN_FUNC(pop)(GEN_COL* list) {
 #ifdef GEN_SOURCE
 
 
-void GEN_FUNC(init)(GEN_COL* list, GEN_SIZE capacity);
-GEN_COL GEN_FUNC(new)(GEN_SIZE capacity);
-void GEN_FUNC(free)(GEN_COL* list);
-void GEN_FUNC_(grow)(GEN_COL* list);
-void GEN_FUNC(add)(GEN_COL* list, GEN_TYPE value);
-GEN_TYPE GEN_FUNC(pop)(GEN_COL* list);
+void GEN_NAME(init)(GEN_ALGO* list, GEN_SIZE capacity);
+GEN_ALGO GEN_NAME(new)(GEN_SIZE capacity);
+void GEN_NAME(free)(GEN_ALGO* list);
+void GEN_NAME_(grow)(GEN_ALGO* list);
+void GEN_NAME(add)(GEN_ALGO* list, GEN_TYPE value);
+GEN_TYPE GEN_NAME(pop)(GEN_ALGO* list);
 
 
 #endif
