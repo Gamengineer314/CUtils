@@ -20,12 +20,9 @@ static void mapest() {
         keys[++i] = rand();
         map_tryAdd(&test, keys[i], i);
         keys[++i] = rand();
-        map_item* ref = map_refOrEmpty(&test, keys[i]);
-        if (ref->key != keys[i]) THROW_ERR("Incorrect ref");
-        ref->value = i;
+        *map_refOrEmpty(&test, keys[i]) = i;
         keys[++i] = rand();
-        ref = map_refOrDefault(&test, keys[i], i);
-        if (ref->key != keys[i] || ref->value != i) THROW_ERR("Incorrect ref");
+        map_refOrDefault(&test, keys[i], i);
     }
     if (test.length != N) THROW_ERR("Incorrect length");
 
@@ -44,12 +41,9 @@ static void mapest() {
         if (!map_contains(&test, keys[i])) THROW_ERR("Key not found %d", keys[i]);
         if (map_get(&test, keys[i]) != i) THROW_ERR("Incorrect value");
         if (map_getOrDefault(&test, keys[i], 314) != i) THROW_ERR("Incorrect value");
-        map_item* ref = map_ref(&test, keys[i]);
-        if (ref->key != keys[i] || ref->value != i) THROW_ERR("Incorrect ref");
-        ref = map_refOrEmpty(&test, keys[i]);
-        if (ref->key != keys[i] || ref->value != i) THROW_ERR("Incorrect ref");
-        ref = map_refOrDefault(&test, keys[i], 314);
-        if (ref->key != keys[i] || ref->value != i) THROW_ERR("Incorrect ref");
+        if (*map_ref(&test, keys[i]) != i) THROW_ERR("Incorrect ref");
+        if (*map_refOrEmpty(&test, keys[i]) != i) THROW_ERR("Incorrect ref");
+        if (*map_refOrDefault(&test, keys[i], 314) != i) THROW_ERR("Incorrect ref");
         map_remove(&test, keys[i]);
         map_remove(&test, keys[i]);
     }

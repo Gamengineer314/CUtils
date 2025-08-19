@@ -19,12 +19,9 @@ static void treeest() {
         keys[++i] = rand();
         tree_tryAdd(&test, keys[i], i);
         keys[++i] = rand();
-        tree_item* ref = tree_refOrEmpty(&test, keys[i]);
-        if (ref->key != keys[i]) THROW_ERR("Incorrect ref");
-        ref->value = i;
+        *tree_refOrEmpty(&test, keys[i]) = i;
         keys[++i] = rand();
-        ref = tree_refOrDefault(&test, keys[i], i);
-        if (ref->key != keys[i] || ref->value != i) THROW_ERR("Incorrect ref");
+        tree_refOrDefault(&test, keys[i], i);
     }
     if (test.length != N) THROW_ERR("Incorrect length");
 
@@ -92,12 +89,9 @@ static void treeest() {
         if (!tree_contains(&test, keys[i])) THROW_ERR("Key not found");
         if (tree_get(&test, keys[i]) != i) THROW_ERR("Incorrect value");
         if (tree_getOrDefault(&test, keys[i], 314) != i) THROW_ERR("Incorrect value");
-        tree_item* ref = tree_ref(&test, keys[i]);
-        if (ref->key != keys[i] || ref->value != i) THROW_ERR("Incorrect ref");
-        ref = tree_refOrEmpty(&test, keys[i]);
-        if (ref->key != keys[i] || ref->value != i) THROW_ERR("Incorrect ref");
-        ref = tree_refOrDefault(&test, keys[i], 314);
-        if (ref->key != keys[i] || ref->value != i) THROW_ERR("Incorrect ref");
+        if (*tree_ref(&test, keys[i]) != i) THROW_ERR("Incorrect ref");
+        if (*tree_refOrEmpty(&test, keys[i]) != i) THROW_ERR("Incorrect ref");
+        if (*tree_refOrDefault(&test, keys[i], 314) != i) THROW_ERR("Incorrect ref");
         tree_remove(&test, keys[i]);
         tree_remove(&test, keys[i]);
     }
