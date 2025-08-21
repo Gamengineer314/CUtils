@@ -8,7 +8,7 @@
 
 #define N 10000
 
-static void treeest() {
+static void tree_test() {
     srand(314);
     int keys[N];
     tree test = tree_new(2);
@@ -29,7 +29,7 @@ static void treeest() {
     memcpy(sortedKeys, keys, sizeof(int) * N);
     sort(sortedKeys, N);
     tree_iter iter = tree_iterAll();
-    tree_item* item;
+    tree_kv* item;
     int i = 0;
     while ((item = tree_nextAll(&test, &iter))) {
         if (item->key != sortedKeys[i++]) THROW_ERR("Incorrect key");
@@ -41,7 +41,7 @@ static void treeest() {
         int startIndex = search(sortedKeys, start, N);
         int endIndex = search(sortedKeys, end, N);
         tree_iter iter = tree_iterAfter(&test, start);
-        tree_item* item;
+        tree_kv* item;
         int j = 0;
         while ((item = tree_nextAfter(&test, start, &iter))) {
             if (item->key != sortedKeys[startIndex + j++]) THROW_ERR("Incorrect key");
@@ -123,5 +123,5 @@ int main() {
     TIME("Tree benchmark",
         tree_benchmark();
     )
-    treeest();
+    tree_test();
 }

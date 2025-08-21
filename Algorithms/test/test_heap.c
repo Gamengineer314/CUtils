@@ -29,7 +29,7 @@ static void heap_test() {
             int s = (double)MAX_LENGTH * r / RAND_MAX;
             while (test.length < s) heap_add(&test, rand(), rand());
             while (test.length > s) {
-                heap_item item = heap_pop(&test);
+                heap_kv item = heap_pop(&test);
                 h = h * 31 + item.key;
                 h = h * 31 + item.value;
             }
@@ -55,7 +55,7 @@ static void heap_mod_test() {
     }
     for (int i = 0; i < 5000; i++) {
         heap_add_mod(&test, rand(), rand());
-        heap_item_mod item = heap_pop_mod(&test);
+        heap_kv_mod item = heap_pop_mod(&test);
         h = h * 31 + item.key;
         h = h * 31 + item.value;
     }

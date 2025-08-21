@@ -7,7 +7,7 @@
 
 #define N 10000
 
-static void mapest() {
+static void map_test() {
     srand(314);
     int keys[N];
     map test = map_new(2);
@@ -28,7 +28,7 @@ static void mapest() {
 
     bool found[N] = {};
     map_iter iter = map_iterStart();
-    map_item* item;
+    map_kv* item;
     while ((item = map_iterNext(&test, &iter))) {
         if (item->key != keys[item->value]) THROW_ERR("Incorrect key");
         found[item->value] = true;
@@ -62,7 +62,7 @@ static void map_benchmark() {
             map_add(&test, keys[j], j);
         }
         for (int j = 0; j < N; j++) {
-            map_get(&test, keys[j]);
+            map_contains(&test, keys[j]);
         }
         for (int j = 0; j < N; j++) {
             map_remove(&test, keys[j]);
@@ -75,5 +75,5 @@ int main() {
     TIME("Map benchmark",
         map_benchmark();
     )
-    mapest();
+    map_test();
 }
