@@ -184,13 +184,7 @@ GEN_NAME(add)(GEN_ALGO* heap, GEN_KEY key
 #endif
 #else
     GEN_NAME_(grow)(heap);
-    GEN_NAME_(heapifyUp)(heap, ++heap->length, 
-#ifdef GEN_NO_VALUE
-        key
-#else
-        (GEN_NAME(kv)) { .key = key, .value = value }
-#endif
-    );
+    GEN_NAME_(heapifyUp)(heap, ++heap->length, GEN_IF_VALUE(((GEN_NAME(kv)) { .key = key, .value = value }), key));
 #endif
 }
 

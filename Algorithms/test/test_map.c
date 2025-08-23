@@ -18,11 +18,14 @@ static void map_test() {
         keys[++i] = rand();
         map_setOrAdd(&test, keys[i], i);
         keys[++i] = rand();
-        map_tryAdd(&test, keys[i], i);
+        if (!map_tryAdd(&test, keys[i], i)) THROW_ERR("Key not added");
         keys[++i] = rand();
-        *map_refOrEmpty(&test, keys[i]) = i;
+        bool added;
+        *map_refOrEmpty(&test, keys[i], &added) = i;
+        if (!added) THROW_ERR("Key not added");
         keys[++i] = rand();
-        map_refOrDefault(&test, keys[i], i);
+        map_refOrDefault(&test, keys[i], i, &added);
+        if (!added) THROW_ERR("Key not added");
     }
     if (test.length != N) THROW_ERR("Incorrect length");
 
@@ -38,16 +41,22 @@ static void map_test() {
     }
 
     for (int i = 0; i < N; i++) {
-        if (!map_contains(&test, keys[i])) THROW_ERR("Key not found %d", keys[i]);
+        if (!map_contains(&test, keys[i])) THROW_ERR("Key not found");
         if (map_get(&test, keys[i]) != i) THROW_ERR("Incorrect value");
         if (map_getOrDefault(&test, keys[i], 314) != i) THROW_ERR("Incorrect value");
         if (*map_ref(&test, keys[i]) != i) THROW_ERR("Incorrect ref");
-        if (*map_refOrEmpty(&test, keys[i]) != i) THROW_ERR("Incorrect ref");
-        if (*map_refOrDefault(&test, keys[i], 314) != i) THROW_ERR("Incorrect ref");
-        map_remove(&test, keys[i]);
-        map_remove(&test, keys[i]);
+        bool added;
+        if (*map_refOrEmpty(&test, keys[i], &added) != i) THROW_ERR("Incorrect ref");
+        if (added) THROW_ERR("Key added");
+        if (*map_refOrDefault(&test, keys[i], 314, &added) != i) THROW_ERR("Incorrect ref");
+        if (added) THROW_ERR("Key added");
+        int* ref = map_remove(&test, keys[i]);
+        if (!ref) THROW_ERR("Key not found");
+        if (*ref != i) THROW_ERR("Incorrect ref");
+        ref = map_remove(&test, keys[i]);
+        if (ref) THROW_ERR("Key not removed");
     }
-    if (test.length != 0) THROW_ERR("Incorrect length %d");
+    if (test.length != 0) THROW_ERR("Incorrect length");
 
     map_free(&test);
 }

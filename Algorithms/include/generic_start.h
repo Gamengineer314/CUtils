@@ -70,8 +70,7 @@
 #ifdef GEN_NO_VALUE
 #define GEN_KV_TYPE GEN_KEY
 #define GEN_KV_KEY(kv) (kv)
-#define GEN_ITER_TYPE GEN_KEY
-#define GEN_ITER_ITEM(kv) (kv)
+#define GEN_IF_VALUE(ifValue, ifNoValue) ifNoValue
 #else
 /**
  * @brief Key-value pair
@@ -85,5 +84,6 @@ typedef struct {
 
 #define GEN_KV_TYPE GEN_NAME(kv)
 #define GEN_KV_KEY(kv) ((kv).key)
+#define GEN_IF_VALUE(ifValue, ifNoValue) ifValue
 #endif
 #endif

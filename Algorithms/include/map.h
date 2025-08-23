@@ -111,9 +111,10 @@ GEN_TYPE* GEN_NAME(ref)(GEN_ALGO* map, GEN_KEY key);
  * @brief Get an item in a map or create it if not found
  * @param map The map
  * @param key Key of the item
+ * @param added Whether a new item was added (NULL to ignore)
  * @return Pointer to the value of the item (usable until next added item)
 **/
-GEN_TYPE* GEN_NAME(refOrEmpty)(GEN_ALGO* map, GEN_KEY key);
+GEN_TYPE* GEN_NAME(refOrEmpty)(GEN_ALGO* map, GEN_KEY key, bool* added);
 
 
 /**
@@ -121,12 +122,14 @@ GEN_TYPE* GEN_NAME(refOrEmpty)(GEN_ALGO* map, GEN_KEY key);
  * @param map The map
  * @param key Key of the item
  * @param value Default value
+ * @param added Whether a new item was added (NULL to ignore)
  * @return Pointer to the value of the item (usable until next added item)
 **/
-inline GEN_TYPE* GEN_NAME(refOrDefault)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value) {
-    GEN_SIZE length = map->length;
-    GEN_TYPE* pValue = GEN_NAME(refOrEmpty)(map, key);
-    if (length != map->length) *pValue = value;
+inline GEN_TYPE* GEN_NAME(refOrDefault)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value, bool* added) {
+    bool _added;
+    GEN_TYPE* pValue = GEN_NAME(refOrEmpty)(map, key, &_added);
+    if (_added) *pValue = value;
+    if (added) *added = _added;
     return pValue;
 }
 
@@ -171,9 +174,12 @@ inline void GEN_NAME(set)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value) {
  * @param map The map
  * @param key The key
  * @param value New value
+ * @return Whether a new item was added
 **/
-inline void GEN_NAME(setOrAdd)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value) {
-    *GEN_NAME(refOrEmpty)(map, key) = value;
+inline bool GEN_NAME(setOrAdd)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value) {
+    bool added;
+    *GEN_NAME(refOrEmpty)(map, key, &added) = value;
+    return added;
 }
 #endif
 
@@ -182,7 +188,7 @@ inline void GEN_NAME(setOrAdd)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value) {
  * @brief Check whether a map contains a key
  * @param map The map
  * @param key The key
- * @return true if the key was found, false otherwise
+ * @return Whether the key was found
 **/
 #ifdef GEN_NO_VALUE
 bool GEN_NAME(contains)(GEN_ALGO* map, GEN_KEY key);
@@ -224,12 +230,15 @@ inline void GEN_NAME(add)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value) {
  * @param map The map
  * @param key Key of the item
  * @param value Value of the item
+ * @return Whether a new item was added
 **/
 #ifdef GEN_NO_VALUE
-void GEN_NAME(tryAdd)(GEN_ALGO* map, GEN_KEY key);
+bool GEN_NAME(tryAdd)(GEN_ALGO* map, GEN_KEY key);
 #else
-inline void GEN_NAME(tryAdd)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value) {
-    GEN_NAME(refOrDefault)(map, key, value);
+inline bool GEN_NAME(tryAdd)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value) {
+    bool added;
+    GEN_NAME(refOrDefault)(map, key, value, &added);
+    return added;
 }
 #endif
 
@@ -238,8 +247,9 @@ inline void GEN_NAME(tryAdd)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value) {
  * @brief Remove an item in a map if found
  * @param map The map
  * @param key Key of the item
+ * @return Pointer to the removed item (usable until next added item)
 **/
-void GEN_NAME(remove)(GEN_ALGO* map, GEN_KEY key);
+GEN_IF_VALUE(GEN_TYPE*, bool) GEN_NAME(remove)(GEN_ALGO* map, GEN_KEY key);
 
 
 /**
@@ -279,8 +289,8 @@ void GEN_NAME(free)(GEN_ALGO* map);
 GEN_TYPE GEN_NAME(get)(GEN_ALGO* map, GEN_KEY key);
 GEN_TYPE GEN_NAME(getOrDefault)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value);
 void GEN_NAME(set)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value);
-void GEN_NAME(setOrAdd)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value);
-void GEN_NAME(tryAdd)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value);
+bool GEN_NAME(setOrAdd)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value);
+bool GEN_NAME(tryAdd)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value);
 void GEN_NAME(add)(GEN_ALGO* map, GEN_KEY key, GEN_TYPE value);
 bool GEN_NAME(contains)(GEN_ALGO* map, GEN_KEY key);
 #endif
@@ -330,21 +340,11 @@ static GEN_NAME_(item)* GEN_NAME_(addItem)(GEN_ALGO* map, GEN_SIZE bucket) {
 }
 
 
-static
-#ifdef GEN_NO_VALUE
-bool
-#else
-GEN_TYPE*
-#endif
-GEN_NAME_(search)(GEN_ALGO* map, GEN_SIZE index, GEN_KEY key) {
+static GEN_IF_VALUE(GEN_TYPE*, bool) GEN_NAME_(search)(GEN_ALGO* map, GEN_SIZE index, GEN_KEY key) {
     while (index != -1) { // Search in linked list
         GEN_NAME_(item)* item = map->items + index;
         if (GEN_EQUALS(key, GEN_KV_KEY(item->kv))) {
-#ifdef GEN_NO_VALUE
-            return true;
-#else
-            return &item->kv.value;
-#endif
+            return GEN_IF_VALUE(&item->kv.value, true);
         }
         index = item->next;
     }
@@ -363,28 +363,27 @@ GEN_TYPE* GEN_NAME(ref)(GEN_ALGO* map, GEN_KEY key) {
 
 
 #ifdef GEN_NO_VALUE
-void GEN_NAME(tryAdd)(GEN_ALGO* map, GEN_KEY key) {
+bool GEN_NAME(tryAdd)(GEN_ALGO* map, GEN_KEY key) {
 #else
-GEN_TYPE* GEN_NAME(refOrEmpty)(GEN_ALGO* map, GEN_KEY key) {
+GEN_TYPE* GEN_NAME(refOrEmpty)(GEN_ALGO* map, GEN_KEY key, bool* added) {
 #endif
     if (map->length >= map->mask >> 1) GEN_NAME_(grow)(map);
     GEN_SIZE bucket = MAP_INDEX(MAP_HASH(key), map->mask);
-#ifdef GEN_NO_VALUE
-    bool
-#else
-    GEN_TYPE*
-#endif
-    found = GEN_NAME_(search)(map, map->buckets[bucket], key);
+    GEN_IF_VALUE(GEN_TYPE*, bool) found = GEN_NAME_(search)(map, map->buckets[bucket], key);
     if (found) {
 #ifdef GEN_NO_VALUE
-        return;
+        return false;
 #else
+        if (added) *added = false;
         return found;
 #endif
     }
     GEN_NAME_(item)* item = GEN_NAME_(addItem)(map, bucket);
     GEN_KV_KEY(item->kv) = key;
-#ifndef GEN_NO_VALUE
+#ifdef GEN_NO_VALUE
+    return true;
+#else
+    if (added) *added = true;
     return &item->kv.value;
 #endif
 }
@@ -405,7 +404,7 @@ GEN_TYPE* GEN_NAME_(addEmpty)(GEN_ALGO* map, GEN_KEY key) {
 }
 
 
-void GEN_NAME(remove)(GEN_ALGO* map, GEN_KEY key) {
+GEN_IF_VALUE(GEN_TYPE*, bool) GEN_NAME(remove)(GEN_ALGO* map, GEN_KEY key) {
     GEN_SIZE bucket = MAP_INDEX(MAP_HASH(key), map->mask);
     GEN_SIZE* index = map->buckets + bucket;
     while (*index != -1) {
@@ -416,10 +415,11 @@ void GEN_NAME(remove)(GEN_ALGO* map, GEN_KEY key) {
             map->reusable = *index;
             map->length--;
             *index = next;
-            break;
+            return GEN_IF_VALUE(&item->kv.value, true);
         }
         index = &item->next;
     }
+    return 0;
 }
 
 #endif

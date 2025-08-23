@@ -11,6 +11,7 @@
 #undef GEN_NO_VALUE
 #undef GEN_KV_TYPE
 #undef GEN_KV_KEY
+#undef GEN_IF_VALUE
 #undef GEN_ALGO
 #undef GEN_NAME
 #undef GEN_NAME_
