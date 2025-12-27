@@ -17,12 +17,15 @@
 #endif
 
 // Not standard but most likely works
+#ifndef SORT
+#define SORT
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 static inline int32_t floatToInt(float f) { return *(int32_t*)&f; }
 static inline int64_t doubleToInt(double d) { return *(int64_t*)&d; }
 #pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
+#endif
 
 // Keys for signed integer and floating point types (GEN_TYPE must be the unsigned integer type with the same size)
 #define SORT_SIGNED(item) ((GEN_KEY)(item) ^ ((GEN_KEY)1 << (sizeof(GEN_KEY) * CHAR_BIT - 1)))
@@ -230,7 +233,15 @@ void GEN_NAME(radix)(GEN_TYPE* items, GEN_SIZE n) {
 
 #endif
 
+// Undef parameters for later use
 #undef SORT_COMPARABLE
 #undef SORT_KEY
+#undef SORT_SIGNED
+#undef SORT_FLOAT
+#undef SORT_DOUBLE
+#undef SORT_QUICK_THRESH
+#undef SORT_RADIX_THRESH
+#undef SORT_GT
+#undef SORT_LT
 
 #include "generic_end.h"
