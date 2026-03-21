@@ -8,8 +8,6 @@
 #include <type_traits>
 
 
-namespace benchmark {
-
 extern "C" {
     /**
      * @brief Run a benchmark for a given function
@@ -63,8 +61,6 @@ auto benchmark(TFunc&& func, const char* name, double time, TArgs... args) {
         delete pResult;
         return result;
     }
-}
-
 }
 
 
