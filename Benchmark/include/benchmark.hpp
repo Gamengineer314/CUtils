@@ -51,12 +51,13 @@ void* _benchmark_wrapper(void* arg) {
  * @param time Approximate time the function should be run (in seconds)
  * @return The value returned by the function
 **/
-template<typename TFunc, typename... TArgs> requires (!std::is_same_v<std::decay_t<TFunc>, void*(*)(void*)>)
+template<typename TFunc, typename... TArgs>
 auto benchmark(TFunc&& func, const char* name, double time, TArgs... args) {
     using TResult = std::invoke_result_t<TFunc, TArgs...>;
     _BenchmarkFunction<TResult, TArgs...> function{func, {args...}};
-    TResult* pResult = static_cast<TResult*>(benchmark(_benchmark_wrapper<TResult, TArgs...>, name, time, &function));
+    void* vpResult = benchmark(_benchmark_wrapper<TResult, TArgs...>, name, time, (void*)&function);
     if constexpr (!std::is_void_v<TResult>) {
+        TResult* pResult = static_cast<TResult*>(vpResult);
         TResult result = *pResult;
         delete pResult;
         return result;
