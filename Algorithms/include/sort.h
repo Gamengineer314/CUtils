@@ -17,8 +17,8 @@
 #endif
 
 // Not standard but most likely works
-#ifndef SORT
-#define SORT
+#ifndef FLOAT_TO_INT
+#define FLOAT_TO_INT
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 static inline int32_t floatToInt(float f) { return *(int32_t*)&f; }

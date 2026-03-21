@@ -15,7 +15,7 @@ static int capacity = 0;
 struct timeval _t1, _t2;
 
 
-void* benchmark(void* (*func)(void*), void* arg, const char* name, double time) {
+void* benchmark(void* (*func)(void*), const char* name, double time, void* arg) {
     // Get result
     THROW(gettimeofday(&_t1, NULL));
     void* result = func(arg);

@@ -11,6 +11,6 @@ int main() {
     )
 
     void* arg = NULL;
-    void* result = benchmark(example_func, arg, "Example benchmark", 2);
+    void* result = benchmark(example_func, "Example benchmark", 2, arg);
     print_results();
 }
