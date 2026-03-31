@@ -8,29 +8,29 @@
 static void list_benchmark() {
     srand(314);
     for (int i = 0; i < 50; i++) {
-        list test = list_new(1);
+        List list = list_new(1);
         for (int j = 0; j < 100; j++) {
             int r = rand();
             int s = (double)MAX_LENGTH * r / RAND_MAX;
-            while (test.length < s) list_add(&test, r + test.length);
-            while (test.length > s) list_pop(&test);
+            while (list.length < s) list_add(&list, r + list.length);
+            while (list.length > s) list_pop(&list);
         }
-        list_free(&test);
+        list_free(&list);
     }
 }
 
-static void listest() {
+static void list_test() {
     long h = 0;
     srand(314);
     for (int i = 0; i < 50; i++) {
-        list test = list_new(1);
+        List list = list_new(1);
         for (int j = 0; j < 100; j++) {
             int r = rand();
             int s = (double)MAX_LENGTH * r / RAND_MAX;
-            while (test.length < s) list_add(&test, r + test.length);
-            while (test.length > s) h = h * 31 + list_pop(&test);
+            while (list.length < s) list_add(&list, r + list.length);
+            while (list.length > s) h = h * 31 + list_pop(&list);
         }
-        list_free(&test);
+        list_free(&list);
     }
     printf("%ld\n", h);
 }
@@ -39,5 +39,5 @@ int main() {
     TIME("List benchmark", 
         list_benchmark();
     )
-    listest();
+    list_test();
 }

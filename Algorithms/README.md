@@ -36,10 +36,10 @@ The `algorithm.h` file can now be included anywhere in your program to use the r
 
 ## Algorithms
 
-- `list` : simple list that can also be used as a stack.
-- `queue` : double-ended queue implemented using a circular buffer
-- `heap` : priority queue implemented using a min-heap
-- `map` : hash map using separate chaining
-- `tree` : red-black binary search tree
+- `List` : simple list that can also be used as a stack.
+- `Queue` : double-ended queue implemented using a circular buffer
+- `Heap` : priority queue implemented using a min-heap
+- `Map` : hash map using separate chaining
+- `Tree` : red-black binary search tree
 - `sort` : insertion sort, quick sort, radix sort
 - `search` : binary search

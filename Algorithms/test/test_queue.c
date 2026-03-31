@@ -8,53 +8,53 @@
 static void queue_benchmark() {
     srand(314);
     for (int i = 0; i < 50; i++) {
-        queue test = queue_new(1);
+        Queue queue = queue_new(1);
         for (int j = 0; j < 50; j++) {
             int r = rand();
             int s = (double)MAX_LENGTH * r / RAND_MAX;
-            while (test.length < s) queue_addFirst(&test, r + test.length);
-            while (test.length > s) queue_popFirst(&test);
+            while (queue.length < s) queue_addFirst(&queue, r + queue.length);
+            while (queue.length > s) queue_popFirst(&queue);
             for (int k = 0; k < s; k++) {
-                queue_addFirst(&test, r + k);
-                queue_popLast(&test);
+                queue_addFirst(&queue, r + k);
+                queue_popLast(&queue);
             }
             r = rand();
             s = (double)MAX_LENGTH * r / RAND_MAX;
-            while (test.length < s) queue_addLast(&test, r + test.length);
-            while (test.length > s) queue_popLast(&test);
+            while (queue.length < s) queue_addLast(&queue, r + queue.length);
+            while (queue.length > s) queue_popLast(&queue);
             for (int k = 0; k < s; k++) {
-                queue_addLast(&test, r + k);
-                queue_popFirst(&test);
+                queue_addLast(&queue, r + k);
+                queue_popFirst(&queue);
             }
         }
-        queue_free(&test);
+        queue_free(&queue);
     }
 }
 
-static void queueest() {
+static void queue_test() {
     long h = 0;
     srand(314);
     for (int i = 0; i < 50; i++) {
-        queue test = queue_new(1);
+        Queue queue = queue_new(1);
         for (int j = 0; j < 50; j++) {
             int r = rand();
             int s = (double)MAX_LENGTH * r / RAND_MAX;
-            while (test.length < s) queue_addFirst(&test, r + test.length);
-            while (test.length > s) h = h * 31 + queue_popFirst(&test);
+            while (queue.length < s) queue_addFirst(&queue, r + queue.length);
+            while (queue.length > s) h = h * 31 + queue_popFirst(&queue);
             for (int k = 0; k < s; k++) {
-                queue_addFirst(&test, r + k);
-                h = h * 31 + queue_popLast(&test);
+                queue_addFirst(&queue, r + k);
+                h = h * 31 + queue_popLast(&queue);
             }
             r = rand();
             s = (double)MAX_LENGTH * r / RAND_MAX;
-            while (test.length < s) queue_addLast(&test, r + test.length);
-            while (test.length > s) h = h * 31 + queue_popLast(&test);
+            while (queue.length < s) queue_addLast(&queue, r + queue.length);
+            while (queue.length > s) h = h * 31 + queue_popLast(&queue);
             for (int k = 0; k < s; k++) {
-                queue_addLast(&test, r + k);
-                h = h * 31 + queue_popFirst(&test);
+                queue_addLast(&queue, r + k);
+                h = h * 31 + queue_popFirst(&queue);
             }
         }
-        queue_free(&test);
+        queue_free(&queue);
     }
     printf("%ld\n", h);
 }
@@ -63,5 +63,5 @@ int main() {
     TIME("Queue benchmark", 
         queue_benchmark();
     )
-    queueest();
+    queue_test();
 }

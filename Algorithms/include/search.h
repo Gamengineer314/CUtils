@@ -1,4 +1,4 @@
-#define GEN_PREFIX search
+#define GEN_FUNC_PREFIX search
 #include "generic_start.h"
 
 

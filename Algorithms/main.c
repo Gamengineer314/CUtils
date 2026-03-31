@@ -2,8 +2,8 @@
 #include "algorithms.h"
 
 int main() {
-    list ints = list_new(1);
-    list_ptr ptrs = list_new_ptr(1);
+    List ints = list_new(1);
+    List_ptr ptrs = list_new_ptr(1);
     
     for (int i = 0; i < 10; i++) {
         list_add(&ints, i);

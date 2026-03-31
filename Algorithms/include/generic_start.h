@@ -60,9 +60,15 @@
 
 
 // Struct and function names
-#define GEN_ALGO _GEN_CAT2(GEN_PREFIX, GEN_SUFFIX_)
-#define GEN_NAME(name) _GEN_CAT4(GEN_PREFIX, _, name, GEN_SUFFIX_)
-#define GEN_NAME_(name) _GEN_CAT5(_, GEN_PREFIX, _, name, GEN_SUFFIX_)
+#ifdef GEN_STRUCT_PREFIX
+#define GEN_ALGO _GEN_CAT2(GEN_STRUCT_PREFIX, GEN_SUFFIX_)
+#define GEN_STRUCT(name) _GEN_CAT3(GEN_STRUCT_PREFIX, name, GEN_SUFFIX_)
+#define GEN_STRUCT_(name) _GEN_CAT4(_, GEN_STRUCT_PREFIX, name, GEN_SUFFIX_)
+#else
+#define GEN_ALGO _GEN_CAT2(GEN_FUNC_PREFIX, GEN_SUFFIX_)
+#endif
+#define GEN_FUNC(name) _GEN_CAT4(GEN_FUNC_PREFIX, _, name, GEN_SUFFIX_)
+#define GEN_FUNC_(name) _GEN_CAT5(_, GEN_FUNC_PREFIX, _, name, GEN_SUFFIX_)
 
 
 // Key-value or only key
@@ -80,9 +86,9 @@
 typedef struct {
     GEN_KEY key;
     GEN_TYPE value;
-} GEN_NAME(kv);
+} GEN_STRUCT(KV);
 
-#define GEN_KV_TYPE GEN_NAME(kv)
+#define GEN_KV_TYPE GEN_STRUCT(KV)
 #define GEN_KV_KEY(kv) ((kv).key)
 #define GEN_IF_VALUE(ifValue, ifNoValue) ifValue
 #endif
