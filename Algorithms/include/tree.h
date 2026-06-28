@@ -185,7 +185,7 @@ inline bool GEN_FUNC(setOrAdd)(GEN_ALGO* tree, GEN_KEY key, GEN_TYPE value) {
  * @brief Check whether a tree contains a key
  * @param tree The tree
  * @param key The key
- * @return true if the key was found, false otherwise
+ * @return Whether the key was found
 **/
 #ifdef GEN_NO_VALUE
 bool GEN_FUNC(contains)(GEN_ALGO* tree, GEN_KEY key);
@@ -265,7 +265,7 @@ inline GEN_STRUCT(Iter) GEN_FUNC(iterAfter)(GEN_ALGO* tree, GEN_KEY start) {
 /**
  * @brief Start iterating on a sub-tree
  * @param tree The tree
- * @param end End key of the sub-tree (inclusive)
+ * @param end End key of the sub-tree (exclusive)
  * @return The iterator
 **/
 inline GEN_STRUCT(Iter) GEN_FUNC(iterBefore)(GEN_ALGO* tree, GEN_KEY end) {
@@ -292,8 +292,7 @@ inline GEN_STRUCT(Iter) GEN_FUNC(iterBetween)(GEN_ALGO* tree, GEN_KEY start, GEN
  * @return Next item, NULL if no more items
 **/
 inline GEN_KV_TYPE* GEN_FUNC(nextAll)(GEN_ALGO* tree, GEN_STRUCT(Iter)* iter) {
-    GEN_STRUCT_(Item)* item = tree->items + iter->stack[iter->top];
-    iter->top--;
+    GEN_STRUCT_(Item)* item = tree->items + iter->stack[iter->top--];
     if (item->children[1] != 0) {
         GEN_SIZE index = item->children[1];
         do {
@@ -352,6 +351,7 @@ inline GEN_KV_TYPE* GEN_FUNC(nextBetween)(GEN_ALGO* tree, GEN_KEY start, GEN_KEY
  * @brief Get the closest item with a key smaller or equal to a given key in a tree
  * @param tree The tree
  * @param key The key
+ * @return Pointer to the item (usable until next added item), NULL if none
 **/
 GEN_KV_TYPE* GEN_FUNC(floor)(GEN_ALGO* tree, GEN_KEY key);
 
@@ -360,6 +360,7 @@ GEN_KV_TYPE* GEN_FUNC(floor)(GEN_ALGO* tree, GEN_KEY key);
  * @brief Get the closest item with a key greater than a given key in a tree
  * @param tree The tree
  * @param key The key
+ * @return Pointer to the item (usable until next added item), NULL if none
 **/
 GEN_KV_TYPE* GEN_FUNC(ceil)(GEN_ALGO* tree, GEN_KEY key);
 
@@ -509,7 +510,7 @@ static inline GEN_SIZE* GEN_FUNC_(maintainRemove)(GEN_ALGO* tree, GEN_SIZE* stac
         GEN_SIZE siblingIndex = parent->children[invDir] & ~TREE_RED;
         GEN_STRUCT_(Item)* sibling = tree->items + siblingIndex;
         GEN_SIZE* pParentIndex = &tree->items[TREE_INDEX(top[-1])].children[TREE_DIR(top[-1])];
-
+        
         if (parent->children[invDir] & TREE_RED) { // Rotate and continue
             *pParentIndex = siblingIndex;
             parent->children[invDir] = sibling->children[dir];
@@ -518,8 +519,6 @@ static inline GEN_SIZE* GEN_FUNC_(maintainRemove)(GEN_ALGO* tree, GEN_SIZE* stac
             sibling->size = parent->size;
             parent->size -= 1 + tree->items[sibling->children[invDir]].size;
 #endif
-            *top = TREE_FRAME(TREE_INDEX(*top), siblingIndex);
-            top++;
             pParentIndex = &sibling->children[dir];
             siblingIndex = parent->children[invDir];
             sibling = tree->items + siblingIndex;
@@ -536,7 +535,8 @@ static inline GEN_SIZE* GEN_FUNC_(maintainRemove)(GEN_ALGO* tree, GEN_SIZE* stac
 #endif
             break;
         }
-        else if (sibling->children[dir] & TREE_RED) { // Rotate
+        
+        if (sibling->children[dir] & TREE_RED) { // Rotate
             GEN_SIZE siblingChildIndex = sibling->children[dir] & ~TREE_RED;
             GEN_STRUCT_(Item)* siblingChild = tree->items + siblingChildIndex;
             *pParentIndex = siblingChildIndex | (*pParentIndex & TREE_RED);
@@ -552,15 +552,14 @@ static inline GEN_SIZE* GEN_FUNC_(maintainRemove)(GEN_ALGO* tree, GEN_SIZE* stac
             break;
         }
         
-        else { // Swap colors and continue if parent is black
-            parent->children[invDir] |= TREE_RED;
+        // Swap colors and continue if parent is black
+        parent->children[invDir] |= TREE_RED;
 #ifdef TREE_SIZE
-            parent->size--;
+        parent->size--;
 #endif
-            if (*pParentIndex & TREE_RED) {
-                *pParentIndex &= ~TREE_RED;
-                break;
-            }
+        if (*pParentIndex & TREE_RED) {
+            *pParentIndex &= ~TREE_RED;
+            break;
         }
     }
     return top;
@@ -616,8 +615,7 @@ GEN_TYPE* GEN_FUNC(refOrEmpty)(GEN_ALGO* tree, GEN_KEY key, bool* added) {
 #endif
         }
         dir = cmp > 0;
-        *top = TREE_FRAME(index, dir);
-        top++;
+        *top++ = TREE_FRAME(index, dir);
         index = item->children[dir];
     }
     
@@ -728,7 +726,7 @@ GEN_KV_TYPE* GEN_FUNC(floor)(GEN_ALGO* tree, GEN_KEY key) {
             index = item->children[1];
         }
     }
-    return &floor->kv;
+    return floor ? &floor->kv : NULL;
 }
 
 
@@ -744,7 +742,7 @@ GEN_KV_TYPE* GEN_FUNC(ceil)(GEN_ALGO* tree, GEN_KEY key) {
             index = item->children[0];
         }
     }
-    return &ceil->kv;
+    return ceil ? &ceil->kv : NULL;
 }
 
 
