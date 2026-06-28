@@ -34,6 +34,11 @@ typedef struct {
 
 #define TREE_RED ((GEN_SIZE)1 << (sizeof(GEN_SIZE) * CHAR_BIT - 1))
 
+// Stack frame containing the index of an item and the direction to the next item
+#define TREE_FRAME(index, dir) ((index) | (dir) << (sizeof(GEN_SIZE) * CHAR_BIT - 1))
+#define TREE_INDEX(frame) ((frame) & ~TREE_RED)
+#define TREE_DIR(frame) ((frame) >> (sizeof(GEN_SIZE) * CHAR_BIT - 1) & 1)
+
 
 /**
  * @brief Red-black binary search tree
@@ -49,17 +54,6 @@ typedef struct {
     GEN_SIZE capacity;
     GEN_SIZE reusable;
 } GEN_ALGO;
-
-
-/**
- * @brief Index and direction
- * @param index Index of the item
- * @param dir dir to the next item
-**/
-typedef struct {
-    GEN_SIZE index;
-    GEN_SIZE dir;
-} GEN_STRUCT_(Dir);
 
 
 /**
@@ -448,17 +442,17 @@ inline void GEN_FUNC_(grow)(GEN_ALGO* tree) {
 
 
 // Maintain tree invariant after adding an item
-static inline void GEN_FUNC_(maintainAdd)(GEN_ALGO* tree, GEN_STRUCT_(Dir)* stack, GEN_STRUCT_(Dir)* top) {
+static inline void GEN_FUNC_(maintainAdd)(GEN_ALGO* tree, GEN_SIZE* stack, GEN_SIZE* top) {
     while (top - 2 > stack) {
-        GEN_SIZE parentIndex = top[-2].index;
-        GEN_SIZE dir = top[-2].dir;
+        GEN_SIZE parentIndex = TREE_INDEX(top[-2]);
+        GEN_SIZE dir = TREE_DIR(top[-2]);
         GEN_SIZE invDir = dir ^ 1;
         GEN_STRUCT_(Item)* parent = tree->items + parentIndex;
         if (!(parent->children[dir] & TREE_RED)) break;
         top -= 2;
-        GEN_SIZE nodeIndex = top[1].index;
+        GEN_SIZE nodeIndex = TREE_INDEX(top[1]);
         GEN_STRUCT_(Item)* node = tree->items + nodeIndex;
-        GEN_SIZE* pParentIndex = &tree->items[top[-1].index].children[top[-1].dir];
+        GEN_SIZE* pParentIndex = &tree->items[TREE_INDEX(top[-1])].children[TREE_DIR(top[-1])];
 
         if (parent->children[invDir] & TREE_RED) { // Swap colors and continue
             *pParentIndex |= TREE_RED;
@@ -472,7 +466,7 @@ static inline void GEN_FUNC_(maintainAdd)(GEN_ALGO* tree, GEN_STRUCT_(Dir)* stac
         }
         
         // Rotate
-        if (dir == top[1].dir) {
+        if (dir == TREE_DIR(top[1])) {
             *pParentIndex = nodeIndex & ~TREE_RED;
             parent->children[dir] = node->children[invDir];
             node->children[invDir] = parentIndex | TREE_RED;
@@ -499,22 +493,22 @@ static inline void GEN_FUNC_(maintainAdd)(GEN_ALGO* tree, GEN_STRUCT_(Dir)* stac
     }
 #ifdef TREE_SIZE
     while (--top > stack) {
-        tree->items[top->index].size++;
+        tree->items[TREE_INDEX(*top)].size++;
     }
 #endif
 }
 
 
 // Maintain tree invariant after removing an item
-static inline GEN_STRUCT_(Dir)* GEN_FUNC_(maintainRemove)(GEN_ALGO* tree, GEN_STRUCT_(Dir)* stack, GEN_STRUCT_(Dir)* top) {
+static inline GEN_SIZE* GEN_FUNC_(maintainRemove)(GEN_ALGO* tree, GEN_SIZE* stack, GEN_SIZE* top) {
     while (--top > stack) {
-        GEN_SIZE parentIndex = top->index;
-        GEN_SIZE dir = top->dir;
+        GEN_SIZE parentIndex = TREE_INDEX(*top);
+        GEN_SIZE dir = TREE_DIR(*top);
         GEN_SIZE invDir = dir ^ 1;
         GEN_STRUCT_(Item)* parent = tree->items + parentIndex;
         GEN_SIZE siblingIndex = parent->children[invDir] & ~TREE_RED;
         GEN_STRUCT_(Item)* sibling = tree->items + siblingIndex;
-        GEN_SIZE* pParentIndex = &tree->items[top[-1].index].children[top[-1].dir];
+        GEN_SIZE* pParentIndex = &tree->items[TREE_INDEX(top[-1])].children[TREE_DIR(top[-1])];
 
         if (parent->children[invDir] & TREE_RED) { // Rotate and continue
             *pParentIndex = siblingIndex;
@@ -524,7 +518,8 @@ static inline GEN_STRUCT_(Dir)* GEN_FUNC_(maintainRemove)(GEN_ALGO* tree, GEN_ST
             sibling->size = parent->size;
             parent->size -= 1 + tree->items[sibling->children[invDir]].size;
 #endif
-            top++->index = siblingIndex;
+            *top = TREE_FRAME(TREE_INDEX(*top), siblingIndex);
+            top++;
             pParentIndex = &sibling->children[dir];
             siblingIndex = parent->children[invDir];
             sibling = tree->items + siblingIndex;
@@ -600,10 +595,9 @@ bool GEN_FUNC(tryAdd)(GEN_ALGO* tree, GEN_KEY key) {
 GEN_TYPE* GEN_FUNC(refOrEmpty)(GEN_ALGO* tree, GEN_KEY key, bool* added) {
 #endif
     GEN_FUNC_(grow)(tree);
-    GEN_STRUCT_(Dir) stack[TREE_STACK];
-    stack->index = 0;
-    stack->dir = 1;
-    GEN_STRUCT_(Dir)* top = stack + 1;
+    GEN_SIZE stack[TREE_STACK];
+    stack[0] = TREE_FRAME(0, 1);
+    GEN_SIZE* top = stack + 1;
 
     // Find item
     GEN_STRUCT_(Item)* item = tree->items;
@@ -622,8 +616,7 @@ GEN_TYPE* GEN_FUNC(refOrEmpty)(GEN_ALGO* tree, GEN_KEY key, bool* added) {
 #endif
         }
         dir = cmp > 0;
-        top->index = index;
-        top->dir = dir;
+        *top = TREE_FRAME(index, dir);
         top++;
         index = item->children[dir];
     }
@@ -655,8 +648,8 @@ GEN_TYPE* GEN_FUNC(refOrEmpty)(GEN_ALGO* tree, GEN_KEY key, bool* added) {
 
 
 GEN_IF_VALUE(GEN_TYPE*, bool) GEN_FUNC(remove)(GEN_ALGO* tree, GEN_KEY key) {
-    GEN_STRUCT_(Dir) stack[TREE_STACK];
-    GEN_STRUCT_(Dir)* top = stack;
+    GEN_SIZE stack[TREE_STACK];
+    GEN_SIZE* top = stack;
 
     // Find item
     GEN_SIZE index = 0, nextIndex;
@@ -664,9 +657,7 @@ GEN_IF_VALUE(GEN_TYPE*, bool) GEN_FUNC(remove)(GEN_ALGO* tree, GEN_KEY key) {
     GEN_COMPARE_TYPE cmp = 0;
     GEN_SIZE dir = 1;
     do {
-        top->index = index;
-        top->dir = dir;
-        top++;
+        *top++ = TREE_FRAME(index, dir);
         nextIndex = item->children[dir];
         if (nextIndex == 0) return 0;
         index = nextIndex & ~TREE_RED;
@@ -677,7 +668,7 @@ GEN_IF_VALUE(GEN_TYPE*, bool) GEN_FUNC(remove)(GEN_ALGO* tree, GEN_KEY key) {
     
     // Replace item by successor if more than one child
     GEN_SIZE removedIndex = index;
-    GEN_SIZE* removedParent = &tree->items[top[-1].index].children[top[-1].dir];
+    GEN_SIZE* removedParent = &tree->items[TREE_INDEX(top[-1])].children[TREE_DIR(top[-1])];
     bool mustFix;
     if (item->children[0] == 0) {
         mustFix = !(*removedParent & TREE_RED) && !(item->children[1] & TREE_RED);
@@ -689,19 +680,17 @@ GEN_IF_VALUE(GEN_TYPE*, bool) GEN_FUNC(remove)(GEN_ALGO* tree, GEN_KEY key) {
     }
     else {
         GEN_STRUCT_(Item)* removedItem = item;
-        GEN_STRUCT_(Dir)* removedDir = top;
+        GEN_SIZE* removedFrame = top;
         nextIndex = item->children[1];
         do {
-            top->index = index;
-            top->dir = 0;
-            top++;
+            *top++ = TREE_FRAME(index, 0);
             index = nextIndex & ~TREE_RED;
             item = tree->items + index;
             nextIndex = item->children[0];
         } while (nextIndex != 0);
-        removedDir->dir = 1;
-        GEN_SIZE* pIndex = &tree->items[top[-1].index].children[top[-1].dir];
-        removedDir->index = index;
+        *removedFrame = TREE_FRAME(TREE_INDEX(*removedFrame), 1);
+        GEN_SIZE* pIndex = &tree->items[TREE_INDEX(top[-1])].children[TREE_DIR(top[-1])];
+        *removedFrame = TREE_FRAME(index, 1);
         mustFix = !(*pIndex & TREE_RED) && !(item->children[1] & TREE_RED);
         *pIndex = item->children[1] & ~TREE_RED;
         item->children[0] = removedItem->children[0];
@@ -719,7 +708,7 @@ GEN_IF_VALUE(GEN_TYPE*, bool) GEN_FUNC(remove)(GEN_ALGO* tree, GEN_KEY key) {
     if (mustFix) top = GEN_FUNC_(maintainRemove)(tree, stack, top);
 #ifdef TREE_SIZE
     while (--top > stack) {
-        tree->items[top->index].size--;
+        tree->items[TREE_INDEX(*top)].size--;
     }
 #endif
 
@@ -815,5 +804,8 @@ GEN_SIZE GEN_FUNC(countBetween)(GEN_ALGO* tree, GEN_KEY start, GEN_KEY end) {
 #undef TREE_SIZE
 #undef TREE_STACK
 #undef TREE_RED
+#undef TREE_FRAME
+#undef TREE_INDEX
+#undef TREE_DIR
 
 #include "generic_end.h"
