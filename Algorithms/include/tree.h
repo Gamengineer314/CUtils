@@ -435,7 +435,7 @@ GEN_SIZE GEN_FUNC(countBefore)(GEN_ALGO* tree, GEN_KEY end);
 
 
 inline void GEN_FUNC_(grow)(GEN_ALGO* tree) {
-    if (tree->length + 2 >= tree->capacity) {
+    if (tree->length + 1 >= tree->capacity) {
         tree->capacity <<= 1;
         tree->items = THROW_PN(realloc(tree->items, sizeof(GEN_STRUCT_(Item)) * tree->capacity), tree->items);
     }
@@ -468,7 +468,7 @@ static inline void GEN_FUNC_(maintainAdd)(GEN_ALGO* tree, GEN_SIZE* stack, GEN_S
         
         // Rotate
         if (dir == TREE_DIR(top[1])) {
-            *pParentIndex = nodeIndex & ~TREE_RED;
+            *pParentIndex = nodeIndex;
             parent->children[dir] = node->children[invDir];
             node->children[invDir] = parentIndex | TREE_RED;
 #ifdef TREE_SIZE
@@ -715,34 +715,34 @@ GEN_IF_VALUE(GEN_TYPE*, bool) GEN_FUNC(remove)(GEN_ALGO* tree, GEN_KEY key) {
 
 
 GEN_KV_TYPE* GEN_FUNC(floor)(GEN_ALGO* tree, GEN_KEY key) {
-    GEN_STRUCT_(Item)* floor = NULL;
+    GEN_KV_TYPE* floor = NULL;
     GEN_SIZE index = tree->items[0].children[1];
     while (index != 0) {
         GEN_STRUCT_(Item)* item = tree->items + (index & ~TREE_RED);
         GEN_COMPARE_TYPE cmp = GEN_COMPARE(key, GEN_KV_KEY(item->kv));
         if (cmp < 0) index = item->children[0];
         else {
-            floor = item;
+            floor = &item->kv;
             index = item->children[1];
         }
     }
-    return floor ? &floor->kv : NULL;
+    return floor;
 }
 
 
 GEN_KV_TYPE* GEN_FUNC(ceil)(GEN_ALGO* tree, GEN_KEY key) {
-    GEN_STRUCT_(Item)* ceil = NULL;
+    GEN_KV_TYPE* ceil = NULL;
     GEN_SIZE index = tree->items[0].children[1];
     while (index != 0) {
         GEN_STRUCT_(Item)* item = tree->items + (index & ~TREE_RED);
         GEN_COMPARE_TYPE cmp = GEN_COMPARE(key, GEN_KV_KEY(item->kv));
         if (cmp > 0) index = item->children[1];
         else {
-            ceil = item;
+            ceil = &item->kv;
             index = item->children[0];
         }
     }
-    return ceil ? &ceil->kv : NULL;
+    return ceil;
 }
 
 

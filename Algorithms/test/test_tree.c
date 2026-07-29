@@ -14,7 +14,12 @@ static void tree_test() {
     Tree tree = tree_new(2);
     for (int i = 0; i < N; i++) {
         keys[i] = rand();
-        if (tree_contains(&tree, keys[i]) || tree_ref(&tree, keys[i]) != NULL) THROW_ERR("Key already in tree");
+        if (
+            tree_contains(&tree, keys[i]) ||
+            tree_ref(&tree, keys[i]) != NULL ||
+            tree_getOrDefault(&tree, keys[i], 314) != 314 ||
+            tree_remove(&tree, keys[i])
+        ) THROW_ERR("Key already in tree");
         tree_setOrAdd(&tree, keys[i], i);
         keys[++i] = rand();
         tree_tryAdd(&tree, keys[i], i);
@@ -72,7 +77,7 @@ static void tree_test() {
             if (startIndex > 0 || sortedKeys[0] == start) THROW_ERR("Floor not found");
         }
         else {
-            if (sortedKeys[startIndex] == start) {
+            if (startIndex < N && sortedKeys[startIndex] == start) {
                 if (item->key != start) THROW_ERR("Incorrect floor");
             }
             else {
@@ -101,8 +106,12 @@ static void tree_test() {
         int* ref = tree_remove(&tree, keys[i]);
         if (!ref) THROW_ERR("Key not found");
         if (*ref != i) THROW_ERR("Incorrect ref");
-        ref = tree_remove(&tree, keys[i]);
-        if (ref) THROW_ERR("Key not removed");
+        if (
+            tree_contains(&tree, keys[i]) ||
+            tree_ref(&tree, keys[i]) != NULL ||
+            tree_getOrDefault(&tree, keys[i], 314) != 314 ||
+            tree_remove(&tree, keys[i])
+        ) THROW_ERR("Key still in tree");
     }
     if (tree.length != 0) THROW_ERR("Incorrect length");
 
