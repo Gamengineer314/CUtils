@@ -52,9 +52,9 @@ void* _benchmark_wrapper(void* arg) {
  * @return The value returned by the function
 **/
 template<typename TFunc, typename... TArgs>
-auto benchmark(TFunc&& func, const char* name, double time, TArgs... args) {
+auto benchmark(TFunc&& func, const char* name, double time, TArgs&&... args) {
     using TResult = std::invoke_result_t<TFunc, TArgs...>;
-    _BenchmarkFunction<TResult, TArgs...> function{func, {args...}};
+    _BenchmarkFunction<TResult, TArgs...> function{std::forward<TFunc>(func), std::tuple<TArgs...>(std::forward<TArgs>(args)...)};
     void* vpResult = benchmark(_benchmark_wrapper<TResult, TArgs...>, name, time, (void*)&function);
     if constexpr (!std::is_void_v<TResult>) {
         TResult* pResult = static_cast<TResult*>(vpResult);

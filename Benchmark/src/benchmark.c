@@ -89,10 +89,10 @@ void print_results() {
     fprintf(stderr, "Benchmark results:\n");
     for (int i = 0; i < count; i++) {
         if (stdevs[i] == -1) {
-            fprintf(stderr, "%s: %lf us (std-dev: ??? µs)\n", names[i], means[i]);
+            fprintf(stderr, "%s: %lf us (std-dev: ??? us)\n", names[i], means[i]);
         }
         else {
-            fprintf(stderr, "%s: %lf us (std-dev: %lf µs)\n", names[i], means[i], stdevs[i]);
+            fprintf(stderr, "%s: %lf us (std-dev: %lf us)\n", names[i], means[i], stdevs[i]);
         }
     }
 
